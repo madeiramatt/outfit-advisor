@@ -218,6 +218,29 @@
             
             return outfitTable[tempCat][rangeCat];
         }
+        
+        function getRainGear(precipMm, precipProb) {
+            if (precipMm === 0 || precipProb < 30) {
+                return null;
+            }
+            
+            if (precipMm < 5) {
+                return {
+                    intensity: 'Light rain expected',
+                    gear: 'Rain jacket or umbrella'
+                };
+            } else if (precipMm < 15) {
+                return {
+                    intensity: 'Moderate rain expected',
+                    gear: 'Rain jacket and consider rain pants'
+                };
+            } else {
+                return {
+                    intensity: 'Heavy rain expected',
+                    gear: 'Rain jacket, rain pants, waterproof footwear'
+                };
+            }
+        }
 
         async function fetchWeather() {
             try {
