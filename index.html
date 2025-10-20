@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brantford Outfit Advisor</title>
+    <title>Brantford Weather Outfit Advisor V2</title>
     <style>
         * {
             margin: 0;
@@ -15,444 +15,583 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
         
         .container {
+            max-width: 900px;
+            margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
+            border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
         
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
             font-size: 28px;
+            margin-bottom: 8px;
         }
         
-        .location {
-            color: #666;
-            margin-bottom: 30px;
+        header p {
+            opacity: 0.9;
             font-size: 14px;
         }
         
-        .weather-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .section {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e5e7eb;
         }
         
-        .temp-display {
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        
+        .temp-range {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
+            align-items: center;
+            background: #f3f4f6;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
         
-        .temp-item {
-            text-align: center;
+        .temp-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #374151;
         }
         
         .temp-label {
             font-size: 12px;
-            color: #666;
+            color: #6b7280;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+        }
+        
+        .sun-adjustment {
+            background: #fef3c7;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #92400e;
+            margin-top: 10px;
+        }
+        
+        .forecast-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .forecast-table th {
+            background: #f9fafb;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .forecast-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #4b5563;
+        }
+        
+        .forecast-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .current-conditions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .condition-card {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .condition-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             margin-bottom: 5px;
         }
         
-        .temp-value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #667eea;
+        .condition-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
         }
         
-        .recommendation {
-            background: #667eea;
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
-            font-size: 16px;
-            line-height: 1.6;
+        .layers-list {
+            list-style: none;
+            margin-top: 15px;
         }
         
-        .recommendation-title {
-            font-weight: bold;
+        .layers-list li {
+            padding: 12px 15px;
+            background: #eff6ff;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+            font-weight: 500;
+        }
+        
+        .no-additional {
+            padding: 12px 15px;
+            background: #d1fae5;
+            border-radius: 6px;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+            font-weight: 500;
+            margin-top: 15px;
+        }
+        
+        .protection-box {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .protection-box.wind {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+        
+        .protection-title {
+            font-weight: 600;
+            color: #991b1b;
             margin-bottom: 10px;
-            font-size: 18px;
         }
         
-        .last-update {
+        .protection-box.wind .protection-title {
+            color: #1e40af;
+        }
+        
+        .protection-item {
+            padding: 8px 0;
+            color: #7f1d1d;
+        }
+        
+        .protection-box.wind .protection-item {
+            color: #1e3a8a;
+        }
+        
+        .intensity-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 8px;
+        }
+        
+        .intensity-light {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .intensity-moderate {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .intensity-heavy {
+            background: #fecaca;
+            color: #991b1b;
+        }
+        
+        .last-updated {
             text-align: center;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #999;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 13px;
         }
         
         .loading {
             text-align: center;
-            color: #667eea;
-            font-size: 18px;
+            padding: 40px;
+            color: #6b7280;
         }
         
         .error {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 30px;
+            color: #991b1b;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>What Should I Wear?</h1>
-        <div class="location">Brantford, Ontario, Canada</div>
-        
-        <div id="content">
+        <header>
+            <h1>Brantford Weather Outfit Advisor</h1>
+            <p>Learn to layer properly for today's conditions</p>
+        </header>
+        <div id="app">
             <div class="loading">Loading weather data...</div>
         </div>
-        
-        <div class="last-update" id="lastUpdate"></div>
     </div>
 
     <script>
-        const LATITUDE = 43.1394;
-        const LONGITUDE = -80.2644;
-        const API_URL = `https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation&timezone=America/Toronto&forecast_days=1`;
-        
-        const outfitTable = {
-            '-30': {
-                '0-5': 'Level I + Level II base layers, Level III fleece, Level VII parka and trousers, balaclava, insulated gloves and boots',
-                '5-10': 'Level I + Level II base layers, Level VII parka and trousers, removable Level III fleece, balaclava, insulated gloves',
-                '10+': 'Level I base layer, Level II mid-layer, Level VII parka, removable Level III fleece option, face protection and insulated gloves'
-            },
-            '-20': {
-                '0-5': 'Level I + Level II base layers, Level III fleece, Level V soft shell jacket and trousers, balaclava, insulated gloves',
-                '5-10': 'Level I + Level II base layers, Level V soft shell, removable Level III fleece, face covering, insulated gloves',
-                '10+': 'Level I base layer, Level V soft shell jacket, removable Level II or Level III underneath, warm accessories'
-            },
-            '-15': {
-                '0-5': 'Level II base layer, Level III fleece, Level V soft shell jacket and trousers, hat, insulated gloves',
-                '5-10': 'Level II base layer, Level V soft shell, removable Level III fleece, winter accessories',
-                '10+': 'Level I base layer, Level V soft shell, removable Level III fleece option, hat and gloves'
-            },
-            '-10': {
-                '0-5': 'Level II base layer, Level III fleece, Level V soft shell jacket, hat, gloves',
-                '5-10': 'Level II base layer, Level V soft shell, removable Level III fleece, warm accessories',
-                '10+': 'Level I base layer, Level V soft shell, removable Level III fleece, winter accessories'
-            },
-            '-5': {
-                '0-5': 'Level II base layer, Level III fleece, Level V soft shell jacket, hat, gloves',
-                '5-10': 'Level II base layer, Level III fleece with removable Level V soft shell, warm accessories',
-                '10+': 'Level I base layer, Level III fleece, removable Level V soft shell option'
-            },
-            '0': {
-                '0-5': 'Level 0 or Level II base layer, Level III fleece jacket, closed shoes',
-                '5-10': 'Level 0 or Level II base layer, Level III fleece with removable layer option, long pants',
-                '10+': 'Level 0 or Level I base layer, Level III fleece, removable under-layer'
-            },
-            '5': {
-                '0-5': 'Level 0 base layer, Level III fleece or heavy jacket, closed shoes',
-                '5-10': 'Level 0 base layer, Level III fleece with removable option, long pants',
-                '10+': 'Level 0 base layer, Level III fleece with removable under-layer'
-            },
-            '10': {
-                '0-5': 'Level 0 base layer, Level III fleece or light jacket, long pants',
-                '5-10': 'Level 0 base layer, light jacket with removable layer, pants',
-                '10+': 'Level 0 base layer, light jacket with removable option, pants'
-            },
-            '15': {
-                '0-5': 'Level 0 base layer, long-sleeve shirt or light sweater, pants',
-                '5-10': 'Level 0 base layer, long-sleeve shirt with removable layer, pants',
-                '10+': 'Level 0 base layer, hoodie or light jacket over t-shirt, pants'
-            },
-            '20': {
-                '0-5': 'Level 0 base layer, long-sleeve shirt or t-shirt, pants',
-                '5-10': 'Level 0 base layer, t-shirt with thin overshirt option, pants',
-                '10+': 'Level 0 base layer, t-shirt with light cardigan option, pants or jeans'
-            },
-            '25': {
-                '0-5': 'Level 0 base layer, t-shirt, light pants or shorts',
-                '5-10': 'Level 0 base layer, t-shirt with optional thin layer, light pants or shorts',
-                '10+': 'Level 0 base layer, t-shirt, bring thin layer for temperature changes'
-            },
-            '30': {
-                '0-5': 'Level 0 base layer, t-shirt, shorts',
-                '5-10': 'Level 0 base layer, t-shirt, shorts, optional sun layer',
-                '10+': 'Level 0 base layer, t-shirt, shorts, light layer for morning only'
-            }
+        const BRANTFORD_LAT = 43.1394;
+        const BRANTFORD_LON = -80.2644;
+        const WAKING_HOURS_START = 6;
+        const WAKING_HOURS_END = 23;
+        const UV_TEMP_ADJUSTMENT = 0.72;
+        const WIND_THRESHOLD = 15;
+        const HUMID_THRESHOLD = 60;
+        const VEST_TEMP_THRESHOLD = 10;
+
+        const ECWCS_LAYERS = {
+            0: "Level 0: Moisture-wicking underwear",
+            1: "Level I: Lightweight base layer",
+            2: "Level II: Mid-weight base layer",
+            3: "Level III: High-loft fleece jacket",
+            5: "Level V: Soft shell jacket",
+            6: "Level VI: GORE-TEX wet/cold weather gear",
+            7: "Level VII: Extreme cold parka"
         };
 
-        function getTempCategory(temp) {
-            if (temp < -20) return '-30';
-            if (temp < -15) return '-20';
-            if (temp < -10) return '-15';
-            if (temp < -5) return '-10';
-            if (temp < 0) return '-5';
-            if (temp < 5) return '0';
-            if (temp < 10) return '5';
-            if (temp < 15) return '10';
-            if (temp < 20) return '15';
-            if (temp < 25) return '20';
-            if (temp < 30) return '25';
-            return '30';
-        }
-
-        function getRangeCategory(range) {
-            if (range < 5) return '0-5';
-            if (range <= 10) return '5-10';
-            return '10+';
-        }
-
-        function getOutfitRecommendation(maxTemp, minTemp) {
-            const range = maxTemp - minTemp;
-            const tempCat = getTempCategory(maxTemp);
-            const rangeCat = getRangeCategory(range);
+        async function fetchWeatherData() {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${BRANTFORD_LAT}&longitude=${BRANTFORD_LON}&current=apparent_temperature,wind_speed_10m,precipitation&hourly=apparent_temperature_2m,precipitation_probability,precipitation,snowfall,wind_speed_10m,uv_index,is_day,relative_humidity_2m&timezone=America%2FToronto&forecast_days=1`;
             
-            return outfitTable[tempCat][rangeCat];
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Weather data unavailable');
+            return await response.json();
         }
 
-        function getRainGear(precipMm, precipProb) {
-            if (precipMm === 0 || precipProb < 30) {
-                return null;
+        function getApparentTempWithSun(apparentTemp, uvIndex, isDay) {
+            if (!isDay || uvIndex <= 0) return { temp: apparentTemp, sunAdjustment: 0 };
+            const sunAdjustment = uvIndex * UV_TEMP_ADJUSTMENT;
+            return { temp: apparentTemp + sunAdjustment, sunAdjustment };
+        }
+
+        function getLayersForTemp(apparentTemp) {
+            const layers = [];
+            
+            if (apparentTemp > 0) layers.push(0);
+            
+            if (apparentTemp <= 30 && apparentTemp > 20) {
+                // No additional layers
+            } else if (apparentTemp <= 20 && apparentTemp > 15) {
+                layers.push(1);
+            } else if (apparentTemp <= 15 && apparentTemp > 10) {
+                layers.push(1, 3);
+            } else if (apparentTemp <= 10 && apparentTemp > 5) {
+                layers.push(1, 2, 3);
+            } else if (apparentTemp <= 5 && apparentTemp > 0) {
+                layers.push(1, 2, 3, 5);
+            } else if (apparentTemp <= 0 && apparentTemp > -10) {
+                layers.push(1, 2, 3, 5, 6);
+            } else if (apparentTemp <= -10 && apparentTemp > -20) {
+                layers.push(1, 2, 3, 6, 7);
+            } else if (apparentTemp <= -20) {
+                layers.push(1, 2, 3, 6, 7);
             }
+            
+            return layers;
+        }
+
+        function getRainProtection(precipMm) {
+            if (precipMm <= 0) return null;
             
             if (precipMm < 5) {
                 return {
-                    intensity: 'Light rain expected',
-                    gear: 'Rain jacket or umbrella'
+                    intensity: 'light',
+                    label: 'Light',
+                    items: ['Rain jacket or umbrella']
                 };
             } else if (precipMm < 15) {
                 return {
-                    intensity: 'Moderate rain expected',
-                    gear: 'Rain jacket and consider rain pants'
+                    intensity: 'moderate',
+                    label: 'Moderate',
+                    items: ['Rain jacket', 'Consider rain trousers']
                 };
             } else {
                 return {
-                    intensity: 'Heavy rain expected',
-                    gear: 'Rain jacket, rain pants, waterproof footwear'
+                    intensity: 'heavy',
+                    label: 'Heavy',
+                    items: ['Full rain gear', 'Waterproof footwear', 'Rain trousers']
                 };
             }
         }
 
-        function getWindGear(windSpeedKmh, avgHumidity, avgTempC) {
-            if (windSpeedKmh < 15) {
-                return null;
-            }
+        function getWindProtection(windSpeed, humidity, temp) {
+            if (windSpeed <= WIND_THRESHOLD) return null;
             
-            const preferVest = avgHumidity > 60 && avgTempC > 10;
+            const items = [];
             
-            if (windSpeedKmh < 25) {
-                return {
-                    intensity: `Moderate wind (${Math.round(windSpeedKmh)} km/h)`,
-                    gear: preferVest ? 'Light vest recommended for wind protection' : 'Light windbreaker or long sleeves'
-                };
-            } else if (windSpeedKmh < 40) {
-                return {
-                    intensity: `Strong wind (${Math.round(windSpeedKmh)} km/h)`,
-                    gear: preferVest ? 'Insulated vest with wind-resistant fabric' : 'Wind jacket or Level 4 wind shell'
-                };
+            if (humidity > HUMID_THRESHOLD && temp > VEST_TEMP_THRESHOLD) {
+                items.push('Vest (humid conditions)');
+            } else if (windSpeed > 30) {
+                items.push('Level IV wind shell');
             } else {
-                return {
-                    intensity: `Very strong wind (${Math.round(windSpeedKmh)} km/h)`,
-                    gear: 'Level 4 wind shell or heavy windbreaker required'
-                };
+                items.push('Windbreaker');
             }
+            
+            if (windSpeed > 40) {
+                items.push('Face protection recommended');
+            }
+            
+            return {
+                intensity: windSpeed > 30 ? 'moderate' : 'light',
+                label: windSpeed > 30 ? 'Strong' : 'Moderate',
+                items
+            };
         }
 
-        function calculateApparentTemp(tempC, relativeHumidity, windSpeedMs) {
-            const e = (relativeHumidity / 100) * 6.105 * Math.exp((17.27 * tempC) / (237.7 + tempC));
-            const AT = tempC + (0.33 * e) - (0.70 * windSpeedMs) - 4.00;
-            return Math.round(AT * 10) / 10;
-        }
-
-        function getCurrentHourIndex(hourlyTimes) {
+        function renderApp(data) {
             const now = new Date();
             const currentHour = now.getHours();
             
-            for (let i = 0; i < hourlyTimes.length; i++) {
-                const hourDate = new Date(hourlyTimes[i]);
-                if (hourDate.getHours() === currentHour && hourDate.getDate() === now.getDate()) {
-                    return i;
-                }
-            }
-            return 0;
-        }
-
-        async function fetchWeather() {
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('Weather data unavailable');
-                
-                const data = await response.json();
-                
-                const precipMm = data.daily.precipitation_sum[0] || 0;
-                const precipProb = data.daily.precipitation_probability_max[0] || 0;
-                
-                // Filter hourly data for waking hours (06:00 to 23:00)
-                const wakingHourIndices = [];
-                for (let i = 0; i < data.hourly.time.length; i++) {
-                    const hourDate = new Date(data.hourly.time[i]);
-                    const hour = hourDate.getHours();
-                    if (hour >= 6 && hour <= 23) {
-                        wakingHourIndices.push(i);
-                    }
-                }
-                
-                // Calculate apparent temps for all waking hours
-                const wakingApparentTemps = wakingHourIndices.map(i => {
-                    return {
-                        index: i,
-                        apparent: calculateApparentTemp(
-                            data.hourly.temperature_2m[i],
-                            data.hourly.relative_humidity_2m[i],
-                            data.hourly.wind_speed_10m[i] * 0.277778
-                        ),
-                        windSpeed: data.hourly.wind_speed_10m[i],
-                        humidity: data.hourly.relative_humidity_2m[i],
-                        temp: data.hourly.temperature_2m[i]
-                    };
-                });
-                
-                // Find min and max apparent temps during waking hours
-                const minApparentData = wakingApparentTemps.reduce((min, curr) => 
-                    curr.apparent < min.apparent ? curr : min
-                );
-                const maxApparentData = wakingApparentTemps.reduce((max, curr) => 
-                    curr.apparent > max.apparent ? curr : max
-                );
-                
-                const minApparentTemp = minApparentData.apparent;
-                const maxApparentTemp = maxApparentData.apparent;
-                
-                // Calculate average wind speed, humidity, and temp for waking hours
-                const avgWindSpeed = wakingApparentTemps.reduce((sum, curr) => sum + curr.windSpeed, 0) / wakingApparentTemps.length;
-                const avgHumidity = wakingApparentTemps.reduce((sum, curr) => sum + curr.humidity, 0) / wakingApparentTemps.length;
-                const avgTemp = wakingApparentTemps.reduce((sum, curr) => sum + curr.temp, 0) / wakingApparentTemps.length;
-                
-                // Next hour data
-                const currentHourIndex = getCurrentHourIndex(data.hourly.time);
-                const nextHourIndex = Math.min(currentHourIndex + 1, data.hourly.time.length - 1);
-                
-                const nextHourTemp = Math.round(data.hourly.temperature_2m[nextHourIndex]);
-                const nextHourHumidity = data.hourly.relative_humidity_2m[nextHourIndex];
-                const nextHourWindSpeed = data.hourly.wind_speed_10m[nextHourIndex];
-                const nextHourPrecip = data.hourly.precipitation[nextHourIndex] || 0;
-                
-                // Calculate apparent temperature for next hour
-                const apparentTemp = calculateApparentTemp(
-                    data.hourly.temperature_2m[nextHourIndex],
-                    nextHourHumidity,
-                    nextHourWindSpeed * 0.277778
-                );
-                
-                const dayRecommendation = getOutfitRecommendation(Math.round(maxApparentTemp), Math.round(minApparentTemp));
-                const hourRecommendation = getOutfitRecommendation(nextHourTemp, nextHourTemp);
-                const rainGear = getRainGear(precipMm, precipProb);
-                const windGear = getWindGear(avgWindSpeed, avgHumidity, avgTemp);
-                
-                displayWeather(
-                    minApparentTemp, maxApparentTemp, dayRecommendation,
-                    apparentTemp, hourRecommendation,
-                    rainGear, precipMm, precipProb, nextHourPrecip,
-                    windGear
-                );
-                updateLastUpdateTime();
-            } catch (error) {
-                displayError('Unable to fetch weather data. Please try again later.');
-            }
-        }
-
-        function displayWeather(minApparentTemp, maxApparentTemp, dayRecommendation, apparentTemp, hourRecommendation, rainGear, precipMm, precipProb, nextHourPrecip, windGear) {
-            const apparentRange = maxApparentTemp - minApparentTemp;
-            
-            let rainSection = '';
-            if (rainGear) {
-                rainSection = `
-                    <div class="recommendation" style="background: #4a90e2; margin-top: 15px;">
-                        <div class="recommendation-title">Rain Protection (Today)</div>
-                        <div style="margin-bottom: 8px;">${rainGear.intensity} (${precipMm}mm, ${precipProb}% chance)</div>
-                        <div>${rainGear.gear}</div>
-                    </div>
-                `;
-            }
-            
-            let windSection = '';
-            if (windGear) {
-                windSection = `
-                    <div class="recommendation" style="background: #16a085; margin-top: 15px;">
-                        <div class="recommendation-title">Wind Protection (Today)</div>
-                        <div style="margin-bottom: 8px;">${windGear.intensity}</div>
-                        <div>${windGear.gear}</div>
-                    </div>
-                `;
-            }
-            
-            let nextHourRain = '';
-            if (nextHourPrecip > 0) {
-                nextHourRain = `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);"><strong>Rain alert:</strong> ${nextHourPrecip.toFixed(1)}mm expected in next hour</div>`;
-            }
-            
-            document.getElementById('content').innerHTML = `
-                <div class="weather-info">
-                    <div style="font-weight: bold; margin-bottom: 15px; color: #333; font-size: 16px;">Today's Overview (06:00-23:00)</div>
-                    <div class="temp-display">
-                        <div class="temp-item">
-                            <div class="temp-label">Min</div>
-                            <div class="temp-value">${minApparentTemp.toFixed(1)}°C</div>
-                        </div>
-                        <div class="temp-item">
-                            <div class="temp-label">Max</div>
-                            <div class="temp-value">${maxApparentTemp.toFixed(1)}°C</div>
-                        </div>
-                        <div class="temp-item">
-                            <div class="temp-label">Range</div>
-                            <div class="temp-value">${apparentRange.toFixed(1)}°C</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="recommendation">
-                    <div class="recommendation-title">Today's Base Outfit</div>
-                    ${dayRecommendation}
-                </div>
-                ${rainSection}
-                ${windSection}
-                <div class="recommendation" style="background: #e67e22; margin-top: 15px;">
-                    <div class="recommendation-title">Next Hour (Right Now)</div>
-                    <div style="margin-bottom: 10px;">
-                        <strong>Temperature:</strong> ${apparentTemp.toFixed(1)}°C
-                    </div>
-                    <div>${hourRecommendation}</div>
-                    ${nextHourRain}
-                </div>
-            `;
-        }
-
-        function displayError(message) {
-            document.getElementById('content').innerHTML = `
-                <div class="error">${message}</div>
-            `;
-        }
-
-        function updateLastUpdateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-CA', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
+            // Find current hour index and next 3 hours
+            const hourlyData = data.hourly;
+            const currentIndex = hourlyData.time.findIndex(t => {
+                const hour = new Date(t).getHours();
+                return hour === currentHour;
             });
-            document.getElementById('lastUpdate').textContent = `Last updated: ${timeString}`;
+            
+            // Get waking hours data (6-23)
+            const wakingHoursData = hourlyData.time.map((time, i) => {
+                const hour = new Date(time).getHours();
+                if (hour >= WAKING_HOURS_START && hour <= WAKING_HOURS_END) {
+                    return {
+                        apparentTemp: hourlyData.apparent_temperature_2m[i],
+                        uvIndex: hourlyData.uv_index[i],
+                        isDay: hourlyData.is_day[i] === 1,
+                        humidity: hourlyData.relative_humidity_2m[i],
+                        windSpeed: hourlyData.wind_speed_10m[i],
+                        precipitation: (hourlyData.precipitation[i] || 0) + (hourlyData.snowfall[i] || 0)
+                    };
+                }
+                return null;
+            }).filter(d => d !== null);
+            
+            // Calculate worst-case for day
+            const apparentTemps = wakingHoursData.map(d => d.apparentTemp);
+            const minTemp = Math.min(...apparentTemps);
+            const maxTemp = Math.max(...apparentTemps);
+            
+            // Find max UV during day
+            const maxUV = Math.max(...wakingHoursData.filter(d => d.isDay).map(d => d.uvIndex || 0));
+            const maxSunAdjustment = maxUV > 0 ? maxUV * UV_TEMP_ADJUSTMENT : 0;
+            
+            // Current conditions
+            const current = {
+                apparentTemp: data.current.apparent_temperature,
+                windSpeed: data.current.wind_speed_10m,
+                precipitation: data.current.precipitation || 0,
+                uvIndex: hourlyData.uv_index[currentIndex] || 0,
+                isDay: hourlyData.is_day[currentIndex] === 1,
+                humidity: hourlyData.relative_humidity_2m[currentIndex]
+            };
+            
+            const currentWithSun = getApparentTempWithSun(current.apparentTemp, current.uvIndex, current.isDay);
+            
+            // Next 3 hours forecast
+            const next3Hours = [];
+            for (let i = 0; i < 3; i++) {
+                const idx = currentIndex + i;
+                if (idx < hourlyData.time.length) {
+                    const time = new Date(hourlyData.time[idx]);
+                    const isDay = hourlyData.is_day[idx] === 1;
+                    const uvIndex = hourlyData.uv_index[idx] || 0;
+                    const apparentTemp = hourlyData.apparent_temperature_2m[idx];
+                    const withSun = getApparentTempWithSun(apparentTemp, uvIndex, isDay);
+                    
+                    next3Hours.push({
+                        time: time.getHours() + ':00',
+                        apparentTemp: apparentTemp.toFixed(1),
+                        inSunTemp: isDay && uvIndex > 0 ? withSun.temp.toFixed(1) : '-',
+                        precipProb: hourlyData.precipitation_probability[idx] || 0,
+                        precipMm: ((hourlyData.precipitation[idx] || 0) + (hourlyData.snowfall[idx] || 0)).toFixed(1),
+                        windSpeed: hourlyData.wind_speed_10m[idx].toFixed(0),
+                        uvIndex: uvIndex.toFixed(0)
+                    });
+                }
+            }
+            
+            // Layer calculations
+            const currentLayers = getLayersForTemp(current.apparentTemp);
+            const worstCaseLayers = getLayersForTemp(minTemp);
+            const additionalLayers = worstCaseLayers.filter(l => !currentLayers.includes(l));
+            
+            // Protection
+            const maxPrecip = Math.max(...wakingHoursData.map(d => d.precipitation));
+            const maxWind = Math.max(...wakingHoursData.map(d => d.windSpeed));
+            const rainProtection = getRainProtection(maxPrecip);
+            const windProtection = rainProtection ? null : getWindProtection(maxWind, current.humidity, current.apparentTemp);
+            
+            // Render HTML
+            let html = `
+                <div class="section">
+                    <h2 class="section-title">Today's Overview (6:00 - 23:00)</h2>
+                    <div class="temp-range">
+                        <div>
+                            <div class="temp-label">Minimum</div>
+                            <div class="temp-value">${minTemp.toFixed(1)}°C</div>
+                        </div>
+                        <div>
+                            <div class="temp-label">Maximum</div>
+                            <div class="temp-value">${maxTemp.toFixed(1)}°C</div>
+                        </div>
+                    </div>
+                    ${maxSunAdjustment > 0 ? `
+                        <div class="sun-adjustment">
+                            ☀️ In sun: up to +${maxSunAdjustment.toFixed(1)}°C warmer (max ${(maxTemp + maxSunAdjustment).toFixed(1)}°C)
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">Next 3 Hours Forecast</h2>
+                    <table class="forecast-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Temp</th>
+                                <th>In Sun</th>
+                                <th>Precip %</th>
+                                <th>Precip mm</th>
+                                <th>Wind</th>
+                                <th>UV</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${next3Hours.map(h => `
+                                <tr>
+                                    <td>${h.time}</td>
+                                    <td>${h.apparentTemp}°C</td>
+                                    <td>${h.inSunTemp !== '-' ? h.inSunTemp + '°C' : '-'}</td>
+                                    <td>${h.precipProb}%</td>
+                                    <td>${h.precipMm}</td>
+                                    <td>${h.windSpeed} km/h</td>
+                                    <td>${h.uvIndex}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">Next Hour Overview</h2>
+                    <div class="current-conditions">
+                        <div class="condition-card">
+                            <div class="condition-label">Apparent Temperature</div>
+                            <div class="condition-value">${current.apparentTemp.toFixed(1)}°C</div>
+                        </div>
+                        ${currentWithSun.sunAdjustment > 0 ? `
+                            <div class="condition-card">
+                                <div class="condition-label">In Sun</div>
+                                <div class="condition-value">${currentWithSun.temp.toFixed(1)}°C</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">Layers for Next Hour</h2>
+                    <ul class="layers-list">
+                        ${currentLayers.map(l => `<li>${ECWCS_LAYERS[l]}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">Additional Layers for Full Day</h2>
+                    ${additionalLayers.length > 0 ? `
+                        <ul class="layers-list">
+                            ${additionalLayers.map(l => `<li>${ECWCS_LAYERS[l]}</li>`).join('')}
+                        </ul>
+                    ` : `
+                        <div class="no-additional">✓ No additional layers needed for today</div>
+                    `}
+                </div>
+                
+                ${rainProtection ? `
+                    <div class="section">
+                        <h2 class="section-title">Rain Protection</h2>
+                        <div class="protection-box">
+                            <div class="protection-title">
+                                <span class="intensity-badge intensity-${rainProtection.intensity}">${rainProtection.label}</span>
+                                Precipitation Expected
+                            </div>
+                            ${rainProtection.items.map(item => `<div class="protection-item">• ${item}</div>`).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                ${windProtection ? `
+                    <div class="section">
+                        <h2 class="section-title">Wind Protection</h2>
+                        <div class="protection-box wind">
+                            <div class="protection-title">
+                                <span class="intensity-badge intensity-${windProtection.intensity}">${windProtection.label}</span>
+                                Wind Conditions
+                            </div>
+                            ${windProtection.items.map(item => `<div class="protection-item">• ${item}</div>`).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <div class="last-updated">
+                    Last updated: ${now.toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+            `;
+            
+            document.getElementById('app').innerHTML = html;
         }
 
-        fetchWeather();
-        setInterval(fetchWeather, 3600000);
+        async function init() {
+            try {
+                const data = await fetchWeatherData();
+                renderApp(data);
+                
+                // Update every hour
+                setInterval(async () => {
+                    const data = await fetchWeatherData();
+                    renderApp(data);
+                }, 3600000);
+            } catch (error) {
+                document.getElementById('app').innerHTML = `
+                    <div class="error">
+                        <strong>Error loading weather data</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        init();
     </script>
 </body>
 </html>
