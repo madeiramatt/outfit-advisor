@@ -461,13 +461,13 @@
         const VEST_TEMP_THRESHOLD = 10;
 
         const ECWCS_LAYERS = {
-            0: "Level 0: Moisture-wicking underwear",
-            1: "Level I: Lightweight base layer",
-            2: "Level II: Mid-weight base layer",
-            3: "Level III: High-loft fleece jacket",
-            5: "Level V: Soft shell jacket",
-            6: "Level VI: GORE-TEX wet/cold weather gear",
-            7: "Level VII: Extreme cold parka"
+            0: "Layer 0: Moisture-wicking underwear",
+            1: "Layer I: Lightweight base layer",
+            2: "Layer II: Mid-weight base layer",
+            3: "Layer III: High-loft fleece jacket",
+            5: "Layer V: Soft shell jacket",
+            6: "Layer VI: GORE-TEX wet/cold weather gear",
+            7: "Layer VII: Extreme cold parka"
         };
 
         async function fetchWeatherData() {
@@ -542,7 +542,7 @@
             if (humidity > HUMID_THRESHOLD && temp > VEST_TEMP_THRESHOLD) {
                 items.push('Vest (humid conditions)');
             } else if (windSpeed > 30) {
-                items.push('Level IV wind shell');
+                items.push('Layer IV wind shell');
             } else {
                 items.push('Windbreaker');
             }
