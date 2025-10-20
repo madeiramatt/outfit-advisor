@@ -154,8 +154,8 @@
                 '10+': 'Level 1 base layer, Level 5 soft shell, removable Level 3 fleece option'
             },
             '0': {
-                '0-5': 'Level 1 base layer, Level 3 fleece, wool socks',
-                '5-10': 'Level 1 base layer, Level 3 fleece with removable layer 2 option, long pants',
+                '0-5': 'Level 2 base layer, Level 3 fleece jacket, closed shoes',
+                '5-10': 'Level 2 base layer, Level 3 fleece with removable layer option, long pants',
                 '10+': 'Level 1 base layer, Level 3 fleece, removable under-layer, scarf optional'
             },
             '5': {
@@ -179,14 +179,14 @@
                 '10+': 'T-shirt with light cardigan option, pants or jeans'
             },
             '25': {
-                '0-5': 'T-shirt, shorts, hat, optional: sunglasses, sun layer long sleeve &OR pants',
+                '0-5': 'T-shirt, light pants or shorts',
                 '5-10': 'T-shirt with optional thin layer, light pants or shorts',
                 '10+': 'T-shirt, bring thin layer for start/end of walk'
             },
             '30': {
-                '0-5': 'T-shirt, shorts, hat, optional: sunglasses, sun layer long sleeve &OR pants',
-                '5-10': 'T-shirt, shorts, hat, optional: sunglasses, sun layer long sleeve &OR pants',
-                '10+': 'T-shirt, shorts, hat, optional: sunglasses, sun layer long sleeve &OR pants'
+                '0-5': 'T-shirt, shorts',
+                '5-10': 'T-shirt, shorts, optional sun layer',
+                '10+': 'T-shirt, shorts, light layer for morning only'
             }
         };
 
@@ -242,13 +242,34 @@
             }
         }
 
+        function getWindGear(windSpeedKmh, avgHumidity, avgTempC) {
+            if (windSpeedKmh < 15) {
+                return null;
+            }
+            
+            const preferVest = avgHumidity > 60 && avgTempC > 10;
+            
+            if (windSpeedKmh < 25) {
+                return {
+                    intensity: `Moderate wind (${Math.round(windSpeedKmh)} km/h)`,
+                    gear: preferVest ? 'Light vest recommended for wind protection' : 'Light windbreaker or long sleeves'
+                };
+            } else if (windSpeedKmh < 40) {
+                return {
+                    intensity: `Strong wind (${Math.round(windSpeedKmh)} km/h)`,
+                    gear: preferVest ? 'Insulated vest with wind-resistant fabric' : 'Wind jacket or Level 4 wind shell'
+                };
+            } else {
+                return {
+                    intensity: `Very strong wind (${Math.round(windSpeedKmh)} km/h)`,
+                    gear: 'Level 4 wind shell or heavy windbreaker required'
+                };
+            }
+        }
+
         function calculateApparentTemp(tempC, relativeHumidity, windSpeedMs) {
-            // Calculate water vapour pressure
             const e = (relativeHumidity / 100) * 6.105 * Math.exp((17.27 * tempC) / (237.7 + tempC));
-            
-            // Calculate apparent temperature
             const AT = tempC + (0.33 * e) - (0.70 * windSpeedMs) - 4.00;
-            
             return Math.round(AT * 10) / 10;
         }
 
@@ -272,9 +293,6 @@
                 
                 const data = await response.json();
                 
-                // Daily data
-                const maxTemp = Math.round(data.daily.temperature_2m_max[0]);
-                const minTemp = Math.round(data.daily.temperature_2m_min[0]);
                 const precipMm = data.daily.precipitation_sum[0] || 0;
                 const precipProb = data.daily.precipitation_probability_max[0] || 0;
                 
@@ -295,8 +313,11 @@
                         apparent: calculateApparentTemp(
                             data.hourly.temperature_2m[i],
                             data.hourly.relative_humidity_2m[i],
-                            data.hourly.wind_speed_10m[i] * 0.277778  // Convert km/h to m/s
-                        )
+                            data.hourly.wind_speed_10m[i] * 0.277778
+                        ),
+                        windSpeed: data.hourly.wind_speed_10m[i],
+                        humidity: data.hourly.relative_humidity_2m[i],
+                        temp: data.hourly.temperature_2m[i]
                     };
                 });
                 
@@ -311,6 +332,11 @@
                 const minApparentTemp = minApparentData.apparent;
                 const maxApparentTemp = maxApparentData.apparent;
                 
+                // Calculate average wind speed, humidity, and temp for waking hours
+                const avgWindSpeed = wakingApparentTemps.reduce((sum, curr) => sum + curr.windSpeed, 0) / wakingApparentTemps.length;
+                const avgHumidity = wakingApparentTemps.reduce((sum, curr) => sum + curr.humidity, 0) / wakingApparentTemps.length;
+                const avgTemp = wakingApparentTemps.reduce((sum, curr) => sum + curr.temp, 0) / wakingApparentTemps.length;
+                
                 // Next hour data
                 const currentHourIndex = getCurrentHourIndex(data.hourly.time);
                 const nextHourIndex = Math.min(currentHourIndex + 1, data.hourly.time.length - 1);
@@ -324,17 +350,19 @@
                 const apparentTemp = calculateApparentTemp(
                     data.hourly.temperature_2m[nextHourIndex],
                     nextHourHumidity,
-                    nextHourWindSpeed * 0.277778  // Convert km/h to m/s
+                    nextHourWindSpeed * 0.277778
                 );
                 
                 const dayRecommendation = getOutfitRecommendation(Math.round(maxApparentTemp), Math.round(minApparentTemp));
                 const hourRecommendation = getOutfitRecommendation(nextHourTemp, nextHourTemp);
                 const rainGear = getRainGear(precipMm, precipProb);
+                const windGear = getWindGear(avgWindSpeed, avgHumidity, avgTemp);
                 
                 displayWeather(
-                    maxTemp, minTemp, minApparentTemp, maxApparentTemp, dayRecommendation,
-                    nextHourTemp, apparentTemp, hourRecommendation,
-                    rainGear, precipMm, precipProb, nextHourPrecip
+                    minApparentTemp, maxApparentTemp, dayRecommendation,
+                    apparentTemp, hourRecommendation,
+                    rainGear, precipMm, precipProb, nextHourPrecip,
+                    windGear
                 );
                 updateLastUpdateTime();
             } catch (error) {
@@ -342,7 +370,7 @@
             }
         }
 
-        function displayWeather(maxTemp, minTemp, minApparentTemp, maxApparentTemp, dayRecommendation, nextHourTemp, apparentTemp, hourRecommendation, rainGear, precipMm, precipProb, nextHourPrecip) {
+        function displayWeather(minApparentTemp, maxApparentTemp, dayRecommendation, apparentTemp, hourRecommendation, rainGear, precipMm, precipProb, nextHourPrecip, windGear) {
             const apparentRange = maxApparentTemp - minApparentTemp;
             
             let rainSection = '';
@@ -356,6 +384,17 @@
                 `;
             }
             
+            let windSection = '';
+            if (windGear) {
+                windSection = `
+                    <div class="recommendation" style="background: #16a085; margin-top: 15px;">
+                        <div class="recommendation-title">Wind Protection (Today)</div>
+                        <div style="margin-bottom: 8px;">${windGear.intensity}</div>
+                        <div>${windGear.gear}</div>
+                    </div>
+                `;
+            }
+            
             let nextHourRain = '';
             if (nextHourPrecip > 0) {
                 nextHourRain = `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);"><strong>Rain alert:</strong> ${nextHourPrecip.toFixed(1)}mm expected in next hour</div>`;
@@ -363,7 +402,7 @@
             
             document.getElementById('content').innerHTML = `
                 <div class="weather-info">
-                    <div style="font-weight: bold; margin-bottom: 15px; color: #333; font-size: 16px;">Today's Overview</div>
+                    <div style="font-weight: bold; margin-bottom: 15px; color: #333; font-size: 16px;">Today's Overview (06:00-23:00)</div>
                     <div class="temp-display">
                         <div class="temp-item">
                             <div class="temp-label">Min</div>
@@ -384,6 +423,7 @@
                     ${dayRecommendation}
                 </div>
                 ${rainSection}
+                ${windSection}
                 <div class="recommendation" style="background: #e67e22; margin-top: 15px;">
                     <div class="recommendation-title">Next Hour (Right Now)</div>
                     <div style="margin-bottom: 10px;">
@@ -411,10 +451,7 @@
             document.getElementById('lastUpdate').textContent = `Last updated: ${timeString}`;
         }
 
-        // Fetch weather immediately
         fetchWeather();
-
-        // Update every hour
         setInterval(fetchWeather, 3600000);
     </script>
 </body>
