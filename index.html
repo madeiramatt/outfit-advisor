@@ -278,23 +278,38 @@
                 const precipMm = data.daily.precipitation_sum[0] || 0;
                 const precipProb = data.daily.precipitation_probability_max[0] || 0;
                 
-                // Find indices for min and max temps in hourly data
-                const hourlyTemps = data.hourly.temperature_2m;
-                const minTempIndex = hourlyTemps.indexOf(Math.min(...hourlyTemps.slice(0, 24)));
-                const maxTempIndex = hourlyTemps.indexOf(Math.max(...hourlyTemps.slice(0, 24)));
+                // Filter hourly data for waking hours (06:00 to 23:00)
+                const wakingHourIndices = [];
+                for (let i = 0; i < data.hourly.time.length; i++) {
+                    const hourDate = new Date(data.hourly.time[i]);
+                    const hour = hourDate.getHours();
+                    if (hour >= 6 && hour <= 23) {
+                        wakingHourIndices.push(i);
+                    }
+                }
                 
-                // Calculate apparent temps for min and max
-                const minApparentTemp = calculateApparentTemp(
-                    hourlyTemps[minTempIndex],
-                    data.hourly.relative_humidity_2m[minTempIndex],
-                    data.hourly.wind_speed_10m[minTempIndex] * 0.277778  // Convert km/h to m/s
+                // Calculate apparent temps for all waking hours
+                const wakingApparentTemps = wakingHourIndices.map(i => {
+                    return {
+                        index: i,
+                        apparent: calculateApparentTemp(
+                            data.hourly.temperature_2m[i],
+                            data.hourly.relative_humidity_2m[i],
+                            data.hourly.wind_speed_10m[i] * 0.277778  // Convert km/h to m/s
+                        )
+                    };
+                });
+                
+                // Find min and max apparent temps during waking hours
+                const minApparentData = wakingApparentTemps.reduce((min, curr) => 
+                    curr.apparent < min.apparent ? curr : min
+                );
+                const maxApparentData = wakingApparentTemps.reduce((max, curr) => 
+                    curr.apparent > max.apparent ? curr : max
                 );
                 
-                const maxApparentTemp = calculateApparentTemp(
-                    hourlyTemps[maxTempIndex],
-                    data.hourly.relative_humidity_2m[maxTempIndex],
-                    data.hourly.wind_speed_10m[maxTempIndex] * 0.277778  // Convert km/h to m/s
-                );
+                const minApparentTemp = minApparentData.apparent;
+                const maxApparentTemp = maxApparentData.apparent;
                 
                 // Next hour data
                 const currentHourIndex = getCurrentHourIndex(data.hourly.time);
@@ -328,7 +343,6 @@
         }
 
         function displayWeather(maxTemp, minTemp, minApparentTemp, maxApparentTemp, dayRecommendation, nextHourTemp, apparentTemp, hourRecommendation, rainGear, precipMm, precipProb, nextHourPrecip) {
-            const range = maxTemp - minTemp;
             const apparentRange = maxApparentTemp - minApparentTemp;
             
             let rainSection = '';
@@ -353,18 +367,15 @@
                     <div class="temp-display">
                         <div class="temp-item">
                             <div class="temp-label">Min</div>
-                            <div class="temp-value">${minTemp}°C</div>
-                            <div style="font-size: 12px; color: #999; margin-top: 5px;">Feels like: ${minApparentTemp.toFixed(1)}°C</div>
+                            <div class="temp-value">${minApparentTemp.toFixed(1)}°C</div>
                         </div>
                         <div class="temp-item">
                             <div class="temp-label">Max</div>
-                            <div class="temp-value">${maxTemp}°C</div>
-                            <div style="font-size: 12px; color: #999; margin-top: 5px;">Feels like: ${maxApparentTemp.toFixed(1)}°C</div>
+                            <div class="temp-value">${maxApparentTemp.toFixed(1)}°C</div>
                         </div>
                         <div class="temp-item">
                             <div class="temp-label">Range</div>
-                            <div class="temp-value">${range}°C</div>
-                            <div style="font-size: 12px; color: #999; margin-top: 5px;">Apparent: ${apparentRange.toFixed(1)}°C</div>
+                            <div class="temp-value">${apparentRange.toFixed(1)}°C</div>
                         </div>
                     </div>
                 </div>
@@ -376,8 +387,7 @@
                 <div class="recommendation" style="background: #e67e22; margin-top: 15px;">
                     <div class="recommendation-title">Next Hour (Right Now)</div>
                     <div style="margin-bottom: 10px;">
-                        <strong>Actual temp:</strong> ${nextHourTemp}°C | 
-                        <strong>Feels like:</strong> ${apparentTemp.toFixed(1)}°C
+                        <strong>Temperature:</strong> ${apparentTemp.toFixed(1)}°C
                     </div>
                     <div>${hourRecommendation}</div>
                     ${nextHourRain}
