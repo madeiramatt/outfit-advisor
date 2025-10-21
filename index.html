@@ -98,7 +98,7 @@
            BASE STYLES
            Reset and fundamental page styling
            ============================================ */
-        * {
+        {
             margin: 0;
             padding: 0;
             box-sizing: border-box;  /* Include padding/border in element dimensions */
@@ -667,13 +667,36 @@
         // Defines clothing recommendations based on temperature
         // ============================================
         const ECWCS_LAYERS = {
-            0: "Layer 0: Moisture-wicking underwear. Boxers, t-shirt.",
-            1: "Layer I: Moisture-wicking Lightweight base layer. Long sleeves / legs.",
-            2: "Layer II: Mid-weight base layer. Waffle knit polyester.",
-            3: "Layer III: High-loft fleece jacket",
-            5: "Layer V: Soft shell jacket",
-            6: "Layer VI: GORE-TEX wet/cold weather gear",
-            7: "Layer VII: Extreme cold parka"
+            0: {
+                upper: "Moisture-wicking t-shirt",
+                lower: "Moisture-wicking boxers"
+            },
+            1: {
+                upper: "Lightweight wicking long upper",
+                lower: "Lightweight wicking long lower"
+            },
+            2: {
+                upper: "Mid-weight waffle knit polyester, long sleeve",
+                lower: "Mid-weight waffle knit polyester, long pants"
+            },
+            3: {
+                upper: "High-loft insulation sweater"
+            },
+            4: {
+                upper: "Wind jacket (nylon)"
+            },
+            5: {
+                upper: "Soft shell, Water-repellent jacket",
+                lower: "Soft shell, Water-repellent pants"
+            },
+            6: {
+                upper: "Hard shell jacket. Water & Wind proof.",
+                lower: "Hard shell pants. Water & Wind proof."
+            },
+            7: {
+                upper: "Extreme cold parka",
+                lower: "Extreme cold pants"
+            }
         };
 
         // ============================================
