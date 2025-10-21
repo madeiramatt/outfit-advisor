@@ -676,7 +676,7 @@
                 lower: "Lightweight wicking long lower"
             },
             2: {
-                upper: "Mid-weight waffle knit polyester, long sleeve",
+                upper: "Insulation Vest OR Mid-weight waffle knit polyester, long sleeve",
                 lower: "Mid-weight waffle knit polyester, long pants"
             },
             3: {
@@ -757,14 +757,13 @@
                 // Hot: No additional layers
             } else if (apparentTemp <= 20 && apparentTemp > 15) {
                 // Warm: No additional layers
-                upper.push(4);
+                upper.push(1, 4);
             } else if (apparentTemp <= 15 && apparentTemp > 10) {
                 // Cool: Light insulation on top
-                upper.push(0); // push(0, 3); OR push (1, 4);?
+                upper.push(1, 2, 3);
             } else if (apparentTemp <= 10 && apparentTemp > 5) {
                 // Cold: Insulation on top, optional on bottom
                 upper.push(3); // push(0, 3);?
-                lower.push(0);
             } else if (apparentTemp <= 5 && apparentTemp > 0) {
                 // Very cold: Multiple layers top, fewer bottom
                 upper.push(1, 2, 3, 5);
