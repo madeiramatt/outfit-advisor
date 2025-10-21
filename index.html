@@ -232,6 +232,80 @@
             transition: all 0.2s ease;
         }
         
+        .hourly-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .hourly-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hourly-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hourly-card {
+            background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-dark) 100%);
+            padding: 18px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.3s ease;
+        }
+
+        .hourly-card:hover {
+            box-shadow: var(--shadow-large);
+            transform: translateY(-3px);
+        }
+
+        .hourly-card-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--bg-base);
+            padding-bottom: 8px;
+        }
+
+        .hourly-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .hourly-card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .hourly-card-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .hourly-card-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .hourly-card-temp {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin: 8px 0;
+        }
+
         .current-conditions {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -460,6 +534,10 @@
         const HUMID_THRESHOLD = 60;
         const VEST_TEMP_THRESHOLD = 10;
 
+        const UV_THRESHOLD = 3;
+        const RAIN_LIGHT_THRESHOLD = 2.5; // mm per hour
+        const FORECAST_HOURS = [0, 1, 2, 4, 6, 8]; // Hours to display in cards
+
         const ECWCS_LAYERS = {
             0: "Layer 0: Moisture-wicking underwear",
             1: "Layer I: Lightweight base layer",
@@ -479,57 +557,49 @@
         }
 
         function getApparentTempWithSun(apparentTemp, uvIndex, isDay) {
-            if (!isDay || uvIndex <= 0) return { temp: apparentTemp, sunAdjustment: 0 };
+            if (!isDay || uvIndex <= UV_THRESHOLD) return { temp: apparentTemp, sunAdjustment: 0 };
             const sunAdjustment = uvIndex * UV_TEMP_ADJUSTMENT;
             return { temp: apparentTemp + sunAdjustment, sunAdjustment };
         }
 
         function getLayersForTemp(apparentTemp) {
             const layers = [];
-            
+
             if (apparentTemp > 0) layers.push(0);
-            
+
             if (apparentTemp <= 30 && apparentTemp > 20) {
                 // No additional layers
             } else if (apparentTemp <= 20 && apparentTemp > 15) {
-                layers.push(1);
+                // No additional layers
             } else if (apparentTemp <= 15 && apparentTemp > 10) {
-                layers.push(1, 3);
+                layers.push(3);
             } else if (apparentTemp <= 10 && apparentTemp > 5) {
-                layers.push(1, 2, 3);
-            } else if (apparentTemp <= 5 && apparentTemp > 0) {
+                layers.push(3);
+            } else if (apparentTemp <= 5 && apparentTemp > -10) {
                 layers.push(1, 2, 3, 5);
-            } else if (apparentTemp <= 0 && apparentTemp > -10) {
-                layers.push(1, 2, 3, 5, 6);
             } else if (apparentTemp <= -10 && apparentTemp > -20) {
                 layers.push(1, 2, 3, 6, 7);
             } else if (apparentTemp <= -20) {
                 layers.push(1, 2, 3, 6, 7);
             }
-            
+
             return layers;
         }
 
-        function getRainProtection(precipMm) {
-            if (precipMm <= 0) return null;
-            
-            if (precipMm < 5) {
+        function getRainProtection(precipMmPerHour, precipProb) {
+            if (precipMmPerHour <= 0 || !precipProb) return null;
+
+            if (precipMmPerHour < RAIN_LIGHT_THRESHOLD) {
                 return {
                     intensity: 'light',
                     label: 'Light',
                     items: ['Rain jacket or umbrella']
                 };
-            } else if (precipMm < 15) {
-                return {
-                    intensity: 'moderate',
-                    label: 'Moderate',
-                    items: ['Rain jacket', 'Consider rain trousers']
-                };
             } else {
                 return {
                     intensity: 'heavy',
-                    label: 'Heavy',
-                    items: ['Full rain gear', 'Waterproof footwear', 'Rain trousers']
+                    label: 'Moderate/Heavy',
+                    items: ['Full rain gear', 'Rain trousers', 'Waterproof footwear']
                 };
             }
         }
@@ -561,201 +631,154 @@
         function renderApp(data) {
             const now = new Date();
             const currentHour = now.getHours();
-            
-            // Find current hour index and next 3 hours
+
+            // Find current hour index
             const hourlyData = data.hourly;
             const currentIndex = hourlyData.time.findIndex(t => {
                 const hour = new Date(t).getHours();
                 return hour === currentHour;
             });
-            
-            // Get waking hours data (6-23)
-            const wakingHoursData = hourlyData.time.map((time, i) => {
-                const hour = new Date(time).getHours();
-                if (hour >= WAKING_HOURS_START && hour <= WAKING_HOURS_END) {
-                    return {
-                        apparentTemp: hourlyData.apparent_temperature[i],
-                        uvIndex: hourlyData.uv_index[i],
-                        isDay: hourlyData.is_day[i] === 1,
-                        humidity: hourlyData.relative_humidity_2m[i],
-                        windSpeed: hourlyData.wind_speed_10m[i],
-                        precipitation: (hourlyData.precipitation[i] || 0) + (hourlyData.snowfall[i] || 0)
-                    };
-                }
-                return null;
-            }).filter(d => d !== null);
-            
-            // Calculate worst-case for day
-            const apparentTemps = wakingHoursData.map(d => d.apparentTemp);
-            const minTemp = Math.min(...apparentTemps);
-            const maxTemp = Math.max(...apparentTemps);
-            
-            // Find max UV during day
-            const maxUV = Math.max(...wakingHoursData.filter(d => d.isDay).map(d => d.uvIndex || 0));
-            const maxSunAdjustment = maxUV > 0 ? maxUV * UV_TEMP_ADJUSTMENT : 0;
-            
-            // Current conditions
-            const current = {
-                apparentTemp: data.current.apparent_temperature,
-                windSpeed: data.current.wind_speed_10m,
-                precipitation: data.current.precipitation || 0,
-                uvIndex: hourlyData.uv_index[currentIndex] || 0,
-                isDay: hourlyData.is_day[currentIndex] === 1,
-                humidity: hourlyData.relative_humidity_2m[currentIndex]
-            };
-            
-            const currentWithSun = getApparentTempWithSun(current.apparentTemp, current.uvIndex, current.isDay);
-            
-            // Next 3 hours forecast
-            const next3Hours = [];
-            for (let i = 0; i < 3; i++) {
+
+            // Get data for next 8 hours (0, 1, 2, 4, 6, 8 hours)
+            const next8HoursData = [];
+            for (let i = 0; i <= 8; i++) {
                 const idx = currentIndex + i;
                 if (idx < hourlyData.time.length) {
-                    const time = new Date(hourlyData.time[idx]);
-                    const isDay = hourlyData.is_day[idx] === 1;
-                    const uvIndex = hourlyData.uv_index[idx] || 0;
-                    const apparentTemp = hourlyData.apparent_temperature[idx];
-                    const withSun = getApparentTempWithSun(apparentTemp, uvIndex, isDay);
-                    
-                    next3Hours.push({
-                        time: time.getHours() + ':00',
-                        apparentTemp: apparentTemp.toFixed(1),
-                        inSunTemp: isDay && uvIndex > 0 ? withSun.temp.toFixed(1) : '-',
-                        precipProb: hourlyData.precipitation_probability[idx] || 0,
-                        precipMm: ((hourlyData.precipitation[idx] || 0) + (hourlyData.snowfall[idx] || 0)).toFixed(1),
-                        windSpeed: hourlyData.wind_speed_10m[idx].toFixed(0),
-                        uvIndex: uvIndex.toFixed(0)
+                    next8HoursData.push({
+                        hour: i,
+                        time: new Date(hourlyData.time[idx]),
+                        apparentTemp: hourlyData.apparent_temperature[idx],
+                        uvIndex: hourlyData.uv_index[idx] || 0,
+                        isDay: hourlyData.is_day[idx] === 1,
+                        humidity: hourlyData.relative_humidity_2m[idx],
+                        windSpeed: hourlyData.wind_speed_10m[idx],
+                        precipitation: (hourlyData.precipitation[idx] || 0) + (hourlyData.snowfall[idx] || 0),
+                        precipProb: hourlyData.precipitation_probability[idx] || 0
                     });
                 }
             }
-            
-            // Layer calculations
-            const currentLayers = getLayersForTemp(current.apparentTemp);
-            const worstCaseLayers = getLayersForTemp(minTemp);
-            const additionalLayers = worstCaseLayers.filter(l => !currentLayers.includes(l));
-            
-            // Protection
-            const maxPrecip = Math.max(...wakingHoursData.map(d => d.precipitation));
-            const maxWind = Math.max(...wakingHoursData.map(d => d.windSpeed));
-            const rainProtection = getRainProtection(maxPrecip);
-            const windProtection = rainProtection ? null : getWindProtection(maxWind, current.humidity, current.apparentTemp);
-            
+
+            // Create hourly cards for display (0, 1, 2, 4, 6, 8)
+            const hourlyCards = FORECAST_HOURS.map(hour => {
+                const hourData = next8HoursData.find(h => h.hour === hour);
+                if (!hourData) return null;
+
+                const withSun = getApparentTempWithSun(hourData.apparentTemp, hourData.uvIndex, hourData.isDay);
+
+                return {
+                    hour,
+                    title: hour === 0 ? 'Now' : `In ${hour} hour${hour > 1 ? 's' : ''}`,
+                    temp: hourData.apparentTemp.toFixed(1),
+                    inSunTemp: withSun.sunAdjustment > 0 ? withSun.temp.toFixed(1) : null,
+                    precipProb: hourData.precipProb,
+                    precipMm: hourData.precipitation.toFixed(1),
+                    windSpeed: hourData.windSpeed.toFixed(0),
+                    uvIndex: hourData.uvIndex.toFixed(1)
+                };
+            }).filter(c => c !== null);
+
+            // Find coldest temp in 8-hour window
+            const coldestTemp = Math.min(...next8HoursData.map(h => h.apparentTemp));
+            const coldestLayers = getLayersForTemp(coldestTemp);
+
+            // Find max UV in 8-hour window (only show if > UV_THRESHOLD)
+            const maxUV = Math.max(...next8HoursData.filter(h => h.isDay).map(h => h.uvIndex));
+            const maxSunAdjustment = maxUV > UV_THRESHOLD ? maxUV * UV_TEMP_ADJUSTMENT : 0;
+
+            // Find max precipitation in 8-hour window
+            const maxPrecip = Math.max(...next8HoursData.map(h => h.precipitation));
+            const maxPrecipProb = Math.max(...next8HoursData.map(h => h.precipProb));
+            const rainProtection = getRainProtection(maxPrecip, maxPrecipProb);
+
             // Render HTML
             let html = `
                 <div class="section">
-                    <h2 class="section-title">Today's Overview (6:00 - 23:00)</h2>
-                    <div class="temp-range">
-                        <div>
-                            <div class="temp-label">Minimum</div>
-                            <div class="temp-value">${minTemp.toFixed(1)}°C</div>
-                        </div>
-                        <div>
-                            <div class="temp-label">Maximum</div>
-                            <div class="temp-value">${maxTemp.toFixed(1)}°C</div>
-                        </div>
-                    </div>
-                    ${maxSunAdjustment > 0 ? `
-                        <div class="sun-adjustment">
-                            ☀️ In sun: up to +${maxSunAdjustment.toFixed(1)}°C warmer (max ${(maxTemp + maxSunAdjustment).toFixed(1)}°C)
-                        </div>
-                    ` : ''}
-                </div>
-                
-                <div class="section">
-                    <h2 class="section-title">Next 3 Hours Forecast</h2>
-                    <table class="forecast-table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Temp</th>
-                                <th>In Sun</th>
-                                <th>Precip %</th>
-                                <th>Precip mm</th>
-                                <th>Wind</th>
-                                <th>UV</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${next3Hours.map(h => `
-                                <tr>
-                                    <td>${h.time}</td>
-                                    <td>${h.apparentTemp}°C</td>
-                                    <td>${h.inSunTemp !== '-' ? h.inSunTemp + '°C' : '-'}</td>
-                                    <td>${h.precipProb}%</td>
-                                    <td>${h.precipMm}</td>
-                                    <td>${h.windSpeed} km/h</td>
-                                    <td>${h.uvIndex}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="section">
-                    <h2 class="section-title">Next Hour Overview</h2>
-                    <div class="current-conditions">
-                        <div class="condition-card">
-                            <div class="condition-label">Apparent Temperature</div>
-                            <div class="condition-value">${current.apparentTemp.toFixed(1)}°C</div>
-                        </div>
-                        ${currentWithSun.sunAdjustment > 0 ? `
-                            <div class="condition-card">
-                                <div class="condition-label">In Sun</div>
-                                <div class="condition-value">${currentWithSun.temp.toFixed(1)}°C</div>
+                    <h2 class="section-title">Hourly Conditions</h2>
+                    <div class="hourly-cards">
+                        ${hourlyCards.map(card => `
+                            <div class="hourly-card">
+                                <div class="hourly-card-title">${card.title}</div>
+                                <div class="hourly-card-temp">${card.temp}°C</div>
+                                <div class="hourly-card-content">
+                                    ${card.inSunTemp ? `
+                                        <div class="hourly-card-row">
+                                            <span class="hourly-card-label">In Sun</span>
+                                            <span class="hourly-card-value">${card.inSunTemp}°C</span>
+                                        </div>
+                                    ` : ''}
+                                    <div class="hourly-card-row">
+                                        <span class="hourly-card-label">Precip</span>
+                                        <span class="hourly-card-value">${card.precipProb}% / ${card.precipMm}mm</span>
+                                    </div>
+                                    <div class="hourly-card-row">
+                                        <span class="hourly-card-label">Wind</span>
+                                        <span class="hourly-card-value">${card.windSpeed} km/h</span>
+                                    </div>
+                                    <div class="hourly-card-row">
+                                        <span class="hourly-card-label">UV</span>
+                                        <span class="hourly-card-value">${card.uvIndex}</span>
+                                    </div>
+                                </div>
                             </div>
-                        ` : ''}
+                        `).join('')}
                     </div>
                 </div>
-                
+
+                ${maxSunAdjustment > 0 ? `
+                    <div class="section">
+                        <div class="sun-adjustment">
+                            ☀️ In sun: up to +${maxSunAdjustment.toFixed(1)}°C warmer
+                        </div>
+                    </div>
+                ` : ''}
+
                 <div class="section">
-                    <h2 class="section-title">Layers for Next Hour</h2>
+                    <h2 class="section-title">Coldest Temperature Layers</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
+                        Based on coldest temperature in next 8 hours: <strong>${coldestTemp.toFixed(1)}°C</strong>
+                    </p>
                     <ul class="layers-list">
-                        ${currentLayers.map(l => `<li>${ECWCS_LAYERS[l]}</li>`).join('')}
+                        ${coldestLayers.map(l => `<li>${ECWCS_LAYERS[l]}</li>`).join('')}
                     </ul>
                 </div>
-                
-                <div class="section">
-                    <h2 class="section-title">Additional Layers for Full Day</h2>
-                    ${additionalLayers.length > 0 ? `
-                        <ul class="layers-list">
-                            ${additionalLayers.map(l => `<li>${ECWCS_LAYERS[l]}</li>`).join('')}
-                        </ul>
-                    ` : `
-                        <div class="no-additional">✓ No additional layers needed for today</div>
-                    `}
-                </div>
-                
+
                 ${rainProtection ? `
                     <div class="section">
-                        <h2 class="section-title">Rain Protection</h2>
+                        <h2 class="section-title">Precipitation</h2>
                         <div class="protection-box">
                             <div class="protection-title">
                                 <span class="intensity-badge intensity-${rainProtection.intensity}">${rainProtection.label}</span>
-                                Precipitation Expected
+                                Rain Expected
                             </div>
-                            ${rainProtection.items.map(item => `<div class="protection-item">• ${item}</div>`).join('')}
+                            <div class="protection-item">• Probability: ${maxPrecipProb}%</div>
+                            <div class="protection-item">• Expected: ${maxPrecip.toFixed(1)} mm/hour</div>
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
+                                ${rainProtection.items.map(item => `<div class="protection-item">• ${item}</div>`).join('')}
+                            </div>
                         </div>
                     </div>
                 ` : ''}
-                
-                ${windProtection ? `
-                    <div class="section">
-                        <h2 class="section-title">Wind Protection</h2>
-                        <div class="protection-box wind">
-                            <div class="protection-title">
-                                <span class="intensity-badge intensity-${windProtection.intensity}">${windProtection.label}</span>
-                                Wind Conditions
-                            </div>
-                            ${windProtection.items.map(item => `<div class="protection-item">• ${item}</div>`).join('')}
+
+                <div class="section">
+                    <h2 class="section-title">Clothing Layers Recommendation for 8 Hours</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
+                        Worst-case layering if staying outside for the entire 8-hour period
+                    </p>
+                    <ul class="layers-list">
+                        ${coldestLayers.map(l => `<li>${ECWCS_LAYERS[l]}</li>`).join('')}
+                    </ul>
+                    ${rainProtection ? `
+                        <div style="margin-top: 15px; padding: 14px 18px; background: linear-gradient(180deg, var(--amber-lighter) 0%, var(--amber-light) 100%); border-radius: 8px; border-left: 4px solid var(--amber-base); color: var(--amber-darker); font-weight: 500;">
+                            ⚠️ Rain protection required (see Precipitation section above)
                         </div>
-                    </div>
-                ` : ''}
-                
+                    ` : ''}
+                </div>
+
                 <div class="last-updated">
                     Last updated: ${now.toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}
                 </div>
             `;
-            
+
             document.getElementById('app').innerHTML = html;
         }
 
