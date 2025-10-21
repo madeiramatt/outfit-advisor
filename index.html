@@ -549,8 +549,8 @@
         };
 
         async function fetchWeatherData() {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${BRANTFORD_LAT}&longitude=${BRANTFORD_LON}&current=apparent_temperature,wind_speed_10m,precipitation&hourly=apparent_temperature,precipitation_probability,precipitation,snowfall,wind_speed_10m,uv_index,is_day,relative_humidity_2m&timezone=America%2FToronto&forecast_days=1`;
-            
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${BRANTFORD_LAT}&longitude=${BRANTFORD_LON}&current=apparent_temperature,wind_speed_10m,precipitation&hourly=apparent_temperature,precipitation_probability,precipitation,snowfall,wind_speed_10m,uv_index,is_day,relative_humidity_2m&timezone=America%2FToronto&forecast_days=2`;
+
             const response = await fetch(url);
             if (!response.ok) throw new Error('Weather data unavailable');
             return await response.json();
@@ -639,6 +639,11 @@
                 return hour === currentHour;
             });
 
+            // Validate current index was found
+            if (currentIndex === -1) {
+                throw new Error('Could not find current hour in forecast data');
+            }
+
             // Get data for next 8 hours (0, 1, 2, 4, 6, 8 hours)
             const next8HoursData = [];
             for (let i = 0; i <= 8; i++) {
@@ -677,9 +682,20 @@
                 };
             }).filter(c => c !== null);
 
+            // Handle edge case where no data is available
+            if (next8HoursData.length === 0) {
+                throw new Error('Insufficient forecast data available');
+            }
+
             // Find coldest temp in 8-hour window
             const coldestTemp = Math.min(...next8HoursData.map(h => h.apparentTemp));
             const coldestLayers = getLayersForTemp(coldestTemp);
+
+            // Validate that coldestLayers is an array
+            if (!Array.isArray(coldestLayers)) {
+                console.error('coldestLayers is not an array:', coldestLayers, 'coldestTemp:', coldestTemp);
+                throw new Error('Invalid layer calculation');
+            }
 
             // Find max UV in 8-hour window (only show if > UV_THRESHOLD)
             const maxUV = Math.max(...next8HoursData.filter(h => h.isDay).map(h => h.uvIndex));
