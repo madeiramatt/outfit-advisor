@@ -1,101 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Character encoding and viewport configuration for responsive design -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brantford Weather Outfit Advisor V2</title>
+
+    <!-- ============================================
+         STYLES
+         Custom CSS for weather outfit advisor interface
+         ============================================ -->
     <style>
+        /* ============================================
+           CSS CUSTOM PROPERTIES (Variables)
+           Centralized design tokens for colors, shadows, and text
+           ============================================ */
         :root {
-            /* Color system - creating shades with 0.1 lightness increments */
-            /* Gray scale for depth */
-            --bg-dark: hsl(220, 13%, 91%);
-            --bg-base: hsl(220, 13%, 97%);
-            --bg-light: hsl(220, 13%, 100%);
+            /* ========== Background Colors ========== */
+            /* Neutral gray backgrounds for depth and layering */
+            --bg-dark: hsl(220, 13%, 91%);    /* Darker background for contrast */
+            --bg-base: hsl(220, 13%, 97%);    /* Base background color */
+            --bg-light: hsl(220, 13%, 100%);  /* Lightest background (white) */
 
-            /* Purple primary shades */
-            --purple-dark: hsl(248, 73%, 50%);
-            --purple-base: hsl(248, 73%, 60%);
-            --purple-light: hsl(248, 73%, 70%);
-            --purple-lighter: hsl(248, 73%, 80%);
+            /* ========== Purple Palette ========== */
+            /* Primary brand color used for header and gradients */
+            --purple-dark: hsl(248, 73%, 50%);    /* Dark purple for gradients */
+            --purple-base: hsl(248, 73%, 60%);    /* Base purple */
+            --purple-light: hsl(248, 73%, 70%);   /* Light purple for gradients */
+            --purple-lighter: hsl(248, 73%, 80%); /* Lightest purple tint */
 
-            /* Blue shades for info */
-            --blue-darker: hsl(217, 91%, 20%);
-            --blue-dark: hsl(217, 91%, 30%);
-            --blue-base: hsl(217, 91%, 60%);
-            --blue-light: hsl(217, 91%, 95%);
-            --blue-lighter: hsl(217, 91%, 97%);
+            /* ========== Blue Palette ========== */
+            /* Used for informational elements and layer recommendations */
+            --blue-darker: hsl(217, 91%, 20%);   /* Dark blue for text */
+            --blue-dark: hsl(217, 91%, 30%);     /* Dark blue for accents */
+            --blue-base: hsl(217, 91%, 60%);     /* Base blue for borders */
+            --blue-light: hsl(217, 91%, 95%);    /* Light blue background */
+            --blue-lighter: hsl(217, 91%, 97%);  /* Lightest blue background */
 
-            /* Green shades for success */
-            --green-darker: hsl(158, 64%, 20%);
-            --green-dark: hsl(158, 64%, 30%);
-            --green-base: hsl(158, 64%, 50%);
-            --green-light: hsl(158, 64%, 92%);
-            --green-lighter: hsl(158, 64%, 95%);
+            /* ========== Green Palette ========== */
+            /* Used for success states and positive messages */
+            --green-darker: hsl(158, 64%, 20%);  /* Dark green for text */
+            --green-dark: hsl(158, 64%, 30%);    /* Dark green for accents */
+            --green-base: hsl(158, 64%, 50%);    /* Base green for borders */
+            --green-light: hsl(158, 64%, 92%);   /* Light green background */
+            --green-lighter: hsl(158, 64%, 95%); /* Lightest green background */
 
-            /* Amber shades for warning */
-            --amber-darker: hsl(32, 95%, 20%);
-            --amber-dark: hsl(32, 95%, 30%);
-            --amber-base: hsl(32, 95%, 50%);
-            --amber-light: hsl(32, 95%, 87%);
-            --amber-lighter: hsl(32, 95%, 92%);
+            /* ========== Amber Palette ========== */
+            /* Used for warnings and sun adjustments */
+            --amber-darker: hsl(32, 95%, 20%);   /* Dark amber for text */
+            --amber-dark: hsl(32, 95%, 30%);     /* Dark amber for accents */
+            --amber-base: hsl(32, 95%, 50%);     /* Base amber for borders */
+            --amber-light: hsl(32, 95%, 87%);    /* Light amber background */
+            --amber-lighter: hsl(32, 95%, 92%);  /* Lightest amber background */
 
-            /* Red shades for alerts */
-            --red-darker: hsl(0, 84%, 20%);
-            --red-dark: hsl(0, 84%, 30%);
-            --red-base: hsl(0, 84%, 60%);
-            --red-light: hsl(0, 84%, 95%);
-            --red-lighter: hsl(0, 84%, 97%);
+            /* ========== Red Palette ========== */
+            /* Used for alerts, errors, and precipitation warnings */
+            --red-darker: hsl(0, 84%, 20%);      /* Dark red for text */
+            --red-dark: hsl(0, 84%, 30%);        /* Dark red for accents */
+            --red-base: hsl(0, 84%, 60%);        /* Base red for borders */
+            --red-light: hsl(0, 84%, 95%);       /* Light red background */
+            --red-lighter: hsl(0, 84%, 97%);     /* Lightest red background */
 
-            /* Text colors */
-            --text-primary: hsl(217, 19%, 15%);
-            --text-secondary: hsl(217, 19%, 35%);
-            --text-muted: hsl(217, 19%, 45%);
+            /* ========== Text Colors ========== */
+            /* Semantic text color hierarchy */
+            --text-primary: hsl(217, 19%, 15%);   /* Primary text (darkest) */
+            --text-secondary: hsl(217, 19%, 35%); /* Secondary text (medium) */
+            --text-muted: hsl(217, 19%, 45%);     /* Muted text (lightest) */
 
-            /* Shadow system - combining light and dark shadows */
+            /* ========== Shadow System ========== */
+            /* Multi-layered shadows combining dark drop shadows and light inset highlights */
+            /* Used to create depth and visual hierarchy throughout the UI */
+
+            /* Small shadow - subtle elevation for minor elements */
             --shadow-small:
-                0 1px 2px 0 rgba(0, 0, 0, 0.05),
-                0 -1px 0 0 rgba(255, 255, 255, 0.8) inset;
+                0 1px 2px 0 rgba(0, 0, 0, 0.05),              /* Outer shadow */
+                0 -1px 0 0 rgba(255, 255, 255, 0.8) inset;    /* Inner highlight */
 
+            /* Medium shadow - moderate elevation for interactive elements */
             --shadow-medium:
-                0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                0 2px 4px -1px rgba(0, 0, 0, 0.06),
-                0 -1px 0 0 rgba(255, 255, 255, 0.9) inset;
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),            /* Primary shadow */
+                0 2px 4px -1px rgba(0, 0, 0, 0.06),           /* Secondary shadow */
+                0 -1px 0 0 rgba(255, 255, 255, 0.9) inset;    /* Inner highlight */
 
+            /* Large shadow - strong elevation for hover states */
             --shadow-large:
-                0 10px 15px -3px rgba(0, 0, 0, 0.1),
-                0 4px 6px -2px rgba(0, 0, 0, 0.05),
-                0 -2px 0 0 rgba(255, 255, 255, 0.95) inset;
+                0 10px 15px -3px rgba(0, 0, 0, 0.1),          /* Primary shadow */
+                0 4px 6px -2px rgba(0, 0, 0, 0.05),           /* Secondary shadow */
+                0 -2px 0 0 rgba(255, 255, 255, 0.95) inset;   /* Inner highlight */
 
+            /* Inset recessed shadow - creates sunken appearance */
             --shadow-inset-recessed:
-                inset 0 2px 4px 0 rgba(0, 0, 0, 0.06),
-                inset 0 -1px 0 0 rgba(255, 255, 255, 0.5);
+                inset 0 2px 4px 0 rgba(0, 0, 0, 0.06),        /* Inner shadow */
+                inset 0 -1px 0 0 rgba(255, 255, 255, 0.5);    /* Inner highlight */
         }
 
-        * {
+        /* ============================================
+           BASE STYLES
+           Reset and fundamental page styling
+           ============================================ */
+        {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            box-sizing: border-box;  /* Include padding/border in element dimensions */
         }
 
         body {
+            /* System font stack for native look across platforms */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            /* Purple gradient background */
             background: linear-gradient(135deg, var(--purple-base) 0%, var(--purple-dark) 100%);
-            min-height: 100vh;
+            min-height: 100vh;  /* Fill viewport height */
             padding: 20px;
         }
-        
+
+        /* ============================================
+           MAIN CONTAINER
+           Card-style container with elevated shadow
+           ============================================ */
         .container {
             max-width: 900px;
-            margin: 0 auto;
+            margin: 0 auto;  /* Center horizontally */
             background: var(--bg-dark);
             border-radius: 16px;
+            /* Multi-layer shadow for depth */
             box-shadow:
-                0 20px 60px rgba(0,0,0,0.15),
-                0 10px 30px rgba(0,0,0,0.1),
-                0 -2px 0 0 rgba(255, 255, 255, 0.1) inset;
-            overflow: hidden;
+                0 20px 60px rgba(0,0,0,0.15),              /* Large outer shadow */
+                0 10px 30px rgba(0,0,0,0.1),               /* Medium outer shadow */
+                0 -2px 0 0 rgba(255, 255, 255, 0.1) inset; /* Top highlight */
+            overflow: hidden;  /* Clip child elements to rounded corners */
         }
 
+        /* ============================================
+           HEADER SECTION
+           Application title with gradient background
+           ============================================ */
         header {
             background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-base) 100%);
             color: white;
@@ -103,10 +141,11 @@
             text-align: center;
             position: relative;
             box-shadow:
-                0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),        /* Drop shadow */
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.2); /* Top highlight */
         }
 
+        /* Decorative light line at top of header */
         header::before {
             content: '';
             position: absolute;
@@ -120,26 +159,31 @@
         header h1 {
             font-size: 28px;
             margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);  /* Subtle text shadow for depth */
         }
 
         header p {
             opacity: 0.95;
             font-size: 14px;
         }
-        
+
+        /* ============================================
+           CONTENT SECTIONS
+           Alternating background colors for visual separation
+           ============================================ */
         .section {
             padding: 25px 30px;
             background: var(--bg-base);
             border-bottom: none;
         }
 
+        /* Odd sections get lighter background for striping effect */
         .section:nth-child(odd) {
             background: var(--bg-light);
         }
 
         .section:last-child {
-            border-bottom: none;
+            border-bottom: none;  /* Remove border from last section */
         }
 
         .section-title {
@@ -147,9 +191,13 @@
             font-weight: 600;
             margin-bottom: 15px;
             color: var(--text-primary);
-            letter-spacing: -0.02em;
+            letter-spacing: -0.02em;  /* Tight letter spacing for modern look */
         }
         
+        /* ============================================
+           TEMPERATURE DISPLAY COMPONENTS
+           Cards showing temperature ranges and values
+           ============================================ */
         .temp-range {
             display: flex;
             justify-content: space-between;
@@ -159,12 +207,13 @@
             border-radius: 10px;
             margin-bottom: 10px;
             box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
+            transition: all 0.3s ease;  /* Smooth hover animation */
         }
 
+        /* Lift effect on hover */
         .temp-range:hover {
             box-shadow: var(--shadow-large);
-            transform: translateY(-2px);
+            transform: translateY(-2px);  /* Lift up slightly */
         }
 
         .temp-value {
@@ -177,11 +226,12 @@
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.8px;  /* Spaced caps for readability */
             font-weight: 600;
             margin-bottom: 5px;
         }
 
+        /* Sun adjustment notification box */
         .sun-adjustment {
             background: linear-gradient(180deg, var(--amber-lighter) 0%, var(--amber-light) 100%);
             padding: 12px 18px;
@@ -190,20 +240,25 @@
             color: var(--amber-darker);
             margin-top: 10px;
             box-shadow: var(--shadow-small);
-            border-left: 3px solid var(--amber-base);
+            border-left: 3px solid var(--amber-base);  /* Accent border */
         }
         
+        /* ============================================
+           FORECAST TABLE
+           Data table for hourly weather information
+           ============================================ */
         .forecast-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: collapse;  /* Remove spacing between cells */
             margin-top: 15px;
             font-size: 13px;
             border-radius: 8px;
-            overflow: hidden;
+            overflow: hidden;  /* Clip to rounded corners */
             background: var(--bg-dark);
-            box-shadow: var(--shadow-inset-recessed);
+            box-shadow: var(--shadow-inset-recessed);  /* Sunken appearance */
         }
 
+        /* Table header styling */
         .forecast-table th {
             background: linear-gradient(180deg, var(--bg-base) 0%, var(--bg-dark) 100%);
             padding: 12px 10px;
@@ -213,9 +268,10 @@
             border-bottom: 2px solid var(--bg-dark);
             font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.5px;  /* Spaced caps */
         }
 
+        /* Table cell styling */
         .forecast-table td {
             padding: 12px 10px;
             border-bottom: 1px solid var(--bg-base);
@@ -223,47 +279,57 @@
             background: var(--bg-light);
         }
 
+        /* Row hover effect */
         .forecast-table tr:hover td {
             background: var(--bg-base);
             box-shadow: var(--shadow-small);
         }
 
         .forecast-table tbody tr {
-            transition: all 0.2s ease;
+            transition: all 0.2s ease;  /* Smooth hover transition */
         }
-        
+
+        /* ============================================
+           HOURLY WEATHER CARDS
+           Responsive grid layout for hourly forecasts
+           ============================================ */
         .hourly-cards {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, 1fr);  /* 3 columns on desktop */
             gap: 15px;
             margin-top: 15px;
         }
 
+        /* Tablet view - 2 columns */
         @media (max-width: 768px) {
             .hourly-cards {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
+        /* Mobile view - 1 column */
         @media (max-width: 480px) {
             .hourly-cards {
                 grid-template-columns: 1fr;
             }
         }
 
+        /* Individual hourly forecast card */
         .hourly-card {
             background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-dark) 100%);
             padding: 18px 20px;
             border-radius: 10px;
             box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
+            transition: all 0.3s ease;  /* Smooth animation */
         }
 
+        /* Card lift effect on hover */
         .hourly-card:hover {
             box-shadow: var(--shadow-large);
-            transform: translateY(-3px);
+            transform: translateY(-3px);  /* Lift higher than temp-range */
         }
 
+        /* Card header with time label */
         .hourly-card-title {
             font-size: 13px;
             color: var(--text-muted);
@@ -271,19 +337,21 @@
             letter-spacing: 0.8px;
             font-weight: 600;
             margin-bottom: 12px;
-            border-bottom: 1px solid var(--bg-base);
+            border-bottom: 1px solid var(--bg-base);  /* Divider line */
             padding-bottom: 8px;
         }
 
+        /* Container for card data rows */
         .hourly-card-content {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 8px;  /* Spacing between rows */
         }
 
+        /* Individual data row (label + value) */
         .hourly-card-row {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-between;  /* Push label and value apart */
             align-items: center;
             font-size: 13px;
         }
@@ -295,9 +363,10 @@
 
         .hourly-card-value {
             color: var(--text-primary);
-            font-weight: 600;
+            font-weight: 600;  /* Emphasize values */
         }
 
+        /* Large centered temperature display */
         .hourly-card-temp {
             font-size: 24px;
             font-weight: 700;
@@ -306,8 +375,13 @@
             margin: 8px 0;
         }
 
+        /* ============================================
+           CURRENT CONDITIONS CARDS
+           Responsive grid of current weather metrics
+           ============================================ */
         .current-conditions {
             display: grid;
+            /* Auto-fit creates as many columns as fit, minimum 200px each */
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-top: 15px;
@@ -323,7 +397,7 @@
 
         .condition-card:hover {
             box-shadow: var(--shadow-large);
-            transform: translateY(-3px);
+            transform: translateY(-3px);  /* Lift on hover */
         }
 
         .condition-label {
@@ -340,9 +414,13 @@
             font-weight: 700;
             color: var(--text-primary);
         }
-        
+
+        /* ============================================
+           CLOTHING LAYERS LIST
+           Recommended ECWCS layers based on temperature
+           ============================================ */
         .layers-list {
-            list-style: none;
+            list-style: none;  /* Remove default bullets */
             margin-top: 15px;
         }
 
@@ -351,15 +429,16 @@
             background: linear-gradient(180deg, var(--blue-lighter) 0%, var(--blue-light) 100%);
             margin-bottom: 8px;
             border-radius: 8px;
-            border-left: 4px solid var(--blue-base);
+            border-left: 4px solid var(--blue-base);  /* Blue accent stripe */
             color: var(--blue-darker);
             font-weight: 500;
             box-shadow: var(--shadow-small);
             transition: all 0.2s ease;
             position: relative;
-            overflow: hidden;
+            overflow: hidden;  /* Clip pseudo-element */
         }
 
+        /* Decorative highlight line at top of each layer item */
         .layers-list li::before {
             content: '';
             position: absolute;
@@ -370,16 +449,18 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
         }
 
+        /* Slide effect on hover */
         .layers-list li:hover {
             box-shadow: var(--shadow-medium);
-            transform: translateX(4px);
+            transform: translateX(4px);  /* Slide right */
         }
 
+        /* Message for when no additional layers are needed */
         .no-additional {
             padding: 14px 18px;
             background: linear-gradient(180deg, var(--green-lighter) 0%, var(--green-light) 100%);
             border-radius: 8px;
-            border-left: 4px solid var(--green-base);
+            border-left: 4px solid var(--green-base);  /* Green accent stripe */
             color: var(--green-darker);
             font-weight: 500;
             margin-top: 15px;
@@ -388,6 +469,7 @@
             overflow: hidden;
         }
 
+        /* Decorative highlight line */
         .no-additional::before {
             content: '';
             position: absolute;
@@ -397,7 +479,11 @@
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
         }
-        
+
+        /* ============================================
+           PROTECTION BOXES
+           Weather protection recommendations (rain/wind)
+           ============================================ */
         .protection-box {
             background: linear-gradient(180deg, var(--red-lighter) 0%, var(--red-light) 100%);
             border: none;
@@ -405,11 +491,12 @@
             padding: 18px 20px;
             margin-top: 15px;
             box-shadow: var(--shadow-medium);
-            border-left: 4px solid var(--red-base);
+            border-left: 4px solid var(--red-base);  /* Red accent for rain */
             position: relative;
             overflow: hidden;
         }
 
+        /* Decorative top highlight */
         .protection-box::before {
             content: '';
             position: absolute;
@@ -420,6 +507,7 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
         }
 
+        /* Wind variant uses blue color scheme */
         .protection-box.wind {
             background: linear-gradient(180deg, var(--blue-lighter) 0%, var(--blue-light) 100%);
             border-left-color: var(--blue-base);
@@ -432,6 +520,7 @@
             font-size: 15px;
         }
 
+        /* Wind variant title color */
         .protection-box.wind .protection-title {
             color: var(--blue-darker);
         }
@@ -442,10 +531,15 @@
             padding-left: 4px;
         }
 
+        /* Wind variant item color */
         .protection-box.wind .protection-item {
             color: var(--blue-dark);
         }
         
+        /* ============================================
+           INTENSITY BADGES
+           Color-coded severity indicators for weather
+           ============================================ */
         .intensity-badge {
             display: inline-block;
             padding: 5px 12px;
@@ -460,6 +554,7 @@
             overflow: hidden;
         }
 
+        /* Decorative top highlight */
         .intensity-badge::before {
             content: '';
             position: absolute;
@@ -470,21 +565,28 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
         }
 
+        /* Light intensity - amber color scheme */
         .intensity-light {
             background: linear-gradient(180deg, var(--amber-lighter) 0%, var(--amber-light) 100%);
             color: var(--amber-darker);
         }
 
+        /* Moderate intensity - darker amber */
         .intensity-moderate {
             background: linear-gradient(180deg, hsl(32, 95%, 90%) 0%, hsl(32, 95%, 83%) 100%);
             color: var(--amber-darker);
         }
 
+        /* Heavy intensity - red color scheme */
         .intensity-heavy {
             background: linear-gradient(180deg, hsl(0, 84%, 93%) 0%, hsl(0, 84%, 88%) 100%);
             color: var(--red-darker);
         }
-        
+
+        /* ============================================
+           UTILITY STYLES
+           Loading, error, and footer states
+           ============================================ */
         .last-updated {
             text-align: center;
             padding: 20px;
@@ -494,6 +596,7 @@
             letter-spacing: 0.3px;
         }
 
+        /* Loading state shown while fetching data */
         .loading {
             text-align: center;
             padding: 40px;
@@ -501,6 +604,7 @@
             font-size: 14px;
         }
 
+        /* Error state shown when data fetch fails */
         .error {
             background: linear-gradient(180deg, var(--red-lighter) 0%, var(--red-light) 100%);
             border: none;
@@ -509,118 +613,244 @@
             margin: 20px 30px;
             color: var(--red-darker);
             box-shadow: var(--shadow-medium);
-            border-left: 4px solid var(--red-base);
+            border-left: 4px solid var(--red-base);  /* Red accent stripe */
         }
     </style>
 </head>
 <body>
+    <!-- Main container for the weather outfit advisor application -->
     <div class="container">
+        <!-- Header section with application title and tagline -->
         <header>
             <h1>Brantford Weather Outfit Advisor</h1>
             <p>Learn to layer properly for today's conditions</p>
         </header>
+
+        <!-- Application content area - dynamically populated with weather data -->
         <div id="app">
             <div class="loading">Loading weather data...</div>
         </div>
     </div>
 
+    <!-- ============================================
+         JAVASCRIPT
+         Weather data fetching and UI rendering logic
+         ============================================ -->
     <script>
+        // ============================================
+        // CONFIGURATION CONSTANTS
+        // Application settings and thresholds
+        // ============================================
+
+        // Geographic coordinates for Brantford, Ontario
         const BRANTFORD_LAT = 43.1394;
         const BRANTFORD_LON = -80.2644;
-        const WAKING_HOURS_START = 6;
-        const WAKING_HOURS_END = 23;
-        const UV_TEMP_ADJUSTMENT = 0.72;
-        const WIND_THRESHOLD = 15;
-        const HUMID_THRESHOLD = 60;
-        const VEST_TEMP_THRESHOLD = 10;
 
-        const UV_THRESHOLD = 3;
-        const RAIN_LIGHT_THRESHOLD = 2.5; // mm per hour
-        const FORECAST_HOURS = [0, 1, 2, 4, 6, 8]; // Hours to display in cards
+        // Time range for daily forecasts (24-hour format)
+        const WAKING_HOURS_START = 6;   // 6 AM
+        const WAKING_HOURS_END = 23;    // 11 PM
 
+        // Temperature and weather thresholds
+        const UV_TEMP_ADJUSTMENT = 0.72;    // °C adjustment per UV index point when in sun
+        const WIND_THRESHOLD = 15;          // km/h - wind speed requiring protection
+        const HUMID_THRESHOLD = 60;         // % - humidity level affecting comfort
+        const VEST_TEMP_THRESHOLD = 10;     // °C - temperature threshold for vest recommendation
+        const UV_THRESHOLD = 3;             // UV index above which sun adjustment applies
+        const RAIN_LIGHT_THRESHOLD = 2.5;   // mm per hour - threshold between light/heavy rain
+
+        // Display configuration
+        const FORECAST_HOURS = [0, 1, 2, 4, 6, 8]; // Hours from now to display in forecast cards
+
+        // ============================================
+        // ECWCS LAYERING SYSTEM
+        // Extended Cold Weather Clothing System layers
+        // Defines clothing recommendations based on temperature
+        // ============================================
         const ECWCS_LAYERS = {
-            0: "Layer 0: Moisture-wicking underwear",
-            1: "Layer I: Lightweight base layer",
-            2: "Layer II: Mid-weight base layer",
-            3: "Layer III: High-loft fleece jacket",
-            5: "Layer V: Soft shell jacket",
-            6: "Layer VI: GORE-TEX wet/cold weather gear",
-            7: "Layer VII: Extreme cold parka"
+            0: {
+                upper: "Moisture-wicking t-shirt",
+                lower: "Moisture-wicking boxers"
+            },
+            1: {
+                upper: "Lightweight wicking long upper",
+                lower: "Lightweight wicking long lower"
+            },
+            2: {
+                upper: "Insulation Vest OR Mid-weight waffle knit polyester, long sleeve",
+                lower: "Mid-weight waffle knit polyester, long pants"
+            },
+            3: {
+                upper: "High-loft insulation sweater"
+            },
+            4: {
+                upper: "Wind jacket (nylon)",
+                lower: "Wind pants (nylon)"
+            },
+            5: {
+                upper: "Soft shell, Water-repellent jacket",
+                lower: "Soft shell, Water-repellent pants"
+            },
+            6: {
+                upper: "Hard shell jacket. Water & Wind proof.",
+                lower: "Hard shell pants. Water & Wind proof."
+            },
+            7: {
+                upper: "Extreme cold parka",
+                lower: "Extreme cold pants"
+            }
         };
 
+        // ============================================
+        // WEATHER DATA FUNCTIONS
+        // API integration and data processing
+        // ============================================
+
+        /**
+         * Fetches weather forecast data from Open-Meteo API
+         * @returns {Promise<Object>} Weather data including hourly forecasts
+         * @throws {Error} If API request fails
+         */
         async function fetchWeatherData() {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${BRANTFORD_LAT}&longitude=${BRANTFORD_LON}&current=apparent_temperature,wind_speed_10m,precipitation&hourly=apparent_temperature,precipitation_probability,precipitation,snowfall,wind_speed_10m,uv_index,is_day,relative_humidity_2m&timezone=America%2FToronto&forecast_days=2`;
+            // Build API URL with Brantford coordinates and required parameters
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${BRANTFORD_LAT}&longitude=${BRANTFORD_LON}&current=apparent_temperature,wind_speed_10m,precipitation&hourly=apparent_temperature,precipitation_probability,precipitation,snowfall,wind_speed_10m,uv_index,is_day,relative_humidity_2m&timezone=America%2FToronto&forecast_days=1`;
 
             const response = await fetch(url);
             if (!response.ok) throw new Error('Weather data unavailable');
             return await response.json();
         }
 
+        /**
+         * Calculates adjusted apparent temperature when in direct sunlight
+         * Accounts for UV index making it feel warmer in sunlight
+         * @param {number} apparentTemp - Base apparent temperature in °C
+         * @param {number} uvIndex - Current UV index (0-11+)
+         * @param {boolean} isDay - Whether it's currently daytime
+         * @returns {Object} Object with adjusted temp and sunAdjustment amount
+         */
         function getApparentTempWithSun(apparentTemp, uvIndex, isDay) {
+            // Only apply sun adjustment during day with significant UV
             if (!isDay || uvIndex <= UV_THRESHOLD) return { temp: apparentTemp, sunAdjustment: 0 };
+
+            // Calculate temperature increase due to sun exposure
             const sunAdjustment = uvIndex * UV_TEMP_ADJUSTMENT;
             return { temp: apparentTemp + sunAdjustment, sunAdjustment };
         }
 
+        /**
+         * Determines appropriate ECWCS clothing layers for given temperature
+         * Uses temperature ranges to recommend layering strategy
+         * @param {number} apparentTemp - Apparent temperature in °C
+         * @returns {Array<number>} Array of layer numbers to wear
+         */
         function getLayersForTemp(apparentTemp) {
-            const layers = [];
-
-            if (apparentTemp > 0) layers.push(0);
-
-            if (apparentTemp <= 30 && apparentTemp > 20) {
-                // No additional layers
-            } else if (apparentTemp <= 20 && apparentTemp > 15) {
-                // No additional layers
-            } else if (apparentTemp <= 15 && apparentTemp > 10) {
-                layers.push(3);
-            } else if (apparentTemp <= 10 && apparentTemp > 5) {
-                layers.push(3);
-            } else if (apparentTemp <= 5 && apparentTemp > -10) {
-                layers.push(1, 2, 3, 5);
-            } else if (apparentTemp <= -10 && apparentTemp > -20) {
-                layers.push(1, 2, 3, 6, 7);
-            } else if (apparentTemp <= -20) {
-                layers.push(1, 2, 3, 6, 7);
+            const upper = [];
+            const lower = [];
+            
+            // Base layer recommended above freezing
+            if (apparentTemp > 0) {
+                upper.push(0);
+                lower.push(0);
             }
-
-            return layers;
+            
+            // Temperature-based layering recommendations
+            if (apparentTemp <= 30 && apparentTemp > 20) {
+                // Hot: No additional layers
+            } else if (apparentTemp <= 20 && apparentTemp > 15) {
+                // Warm: No additional layers
+                upper.push(1, 4);
+            } else if (apparentTemp <= 15 && apparentTemp > 10) {
+                // Cool: Light insulation on top
+                upper.push(1, 2, 3);
+            } else if (apparentTemp <= 10 && apparentTemp > 5) {
+                // Cold: Insulation on top, optional on bottom
+                upper.push(3); // push(0, 3);?
+            } else if (apparentTemp <= 5 && apparentTemp > 0) {
+                // Very cold: Multiple layers top, fewer bottom
+                upper.push(1, 2, 3, 5);
+                lower.push(1, 2, 5);
+            } else if (apparentTemp <= 0 && apparentTemp > -5) {
+                // Very cold: Multiple layers top, fewer bottom
+                upper.push(1, 2, 3, 5);
+                lower.push(1, 2, 5);
+            } else if (apparentTemp <= -5 && apparentTemp > -10) {
+                // Very cold: Multiple layers top, fewer bottom
+                upper.push(1, 2, 3, 5);
+                lower.push(1, 2, 5);
+            } else if (apparentTemp <= -10 && apparentTemp > -15) {
+                // Extreme cold: Full layering, slightly less insulation bottom
+                upper.push(1, 2, 3, 6, 7);
+                lower.push(1, 2, 3, 6);
+            } else if (apparentTemp <= -15 && apparentTemp > -20) {
+                // Extreme cold: Full layering, slightly less insulation bottom
+                upper.push(1, 2, 3, 6, 7);
+                lower.push(1, 2, 3, 6);
+            } else if (apparentTemp <= -20) {
+                // Severe cold: Maximum protection both
+                upper.push(1, 2, 3, 6, 7);
+                lower.push(1, 2, 3, 6, 7);
+            }
+            
+            return { upper, lower };
         }
 
+        /**
+         * Determines rain protection recommendations based on precipitation
+         * @param {number} precipMmPerHour - Precipitation in mm per hour
+         * @param {number} precipProb - Probability of precipitation (0-100%)
+         * @returns {Object|null} Protection recommendations or null if no rain
+         */
         function getRainProtection(precipMmPerHour, precipProb) {
+            // No protection needed if no precipitation expected
             if (precipMmPerHour <= 0 || !precipProb) return null;
 
+            // Light rain - basic protection sufficient
             if (precipMmPerHour < RAIN_LIGHT_THRESHOLD) {
                 return {
                     intensity: 'light',
                     label: 'Light',
-                    items: ['Rain jacket or umbrella']
+                    items: ['Poncho, Rain jacket or umbrella']
                 };
             } else {
+                // Moderate to heavy rain - comprehensive protection
                 return {
                     intensity: 'heavy',
                     label: 'Moderate/Heavy',
-                    items: ['Full rain gear', 'Rain trousers', 'Waterproof footwear']
+                    items: ['Jacket / Poncho', 'Rain pants', 'Waterproof footwear']
                 };
             }
         }
 
+        /**
+         * Determines wind protection recommendations based on conditions
+         * Considers wind speed, humidity, and temperature
+         * @param {number} windSpeed - Wind speed in km/h
+         * @param {number} humidity - Relative humidity percentage
+         * @param {number} temp - Temperature in °C
+         * @returns {Object|null} Protection recommendations or null if wind not significant
+         */
         function getWindProtection(windSpeed, humidity, temp) {
+            // No protection needed below threshold
             if (windSpeed <= WIND_THRESHOLD) return null;
-            
+
             const items = [];
-            
+
+            // Determine appropriate wind protection based on conditions
             if (humidity > HUMID_THRESHOLD && temp > VEST_TEMP_THRESHOLD) {
+                // Humid and mild - vest for breathability
                 items.push('Vest (humid conditions)');
             } else if (windSpeed > 30) {
+                // Strong wind - dedicated wind shell
                 items.push('Layer IV wind shell');
             } else {
+                // Moderate wind - basic windbreaker
                 items.push('Windbreaker');
             }
-            
+
+            // Very strong wind requires face protection
             if (windSpeed > 40) {
                 items.push('Face protection recommended');
             }
-            
+
             return {
                 intensity: windSpeed > 30 ? 'moderate' : 'light',
                 label: windSpeed > 30 ? 'Strong' : 'Moderate',
@@ -628,46 +858,55 @@
             };
         }
 
+        // ============================================
+        // UI RENDERING
+        // Main function to generate and display weather UI
+        // ============================================
+
+        /**
+         * Renders the complete weather outfit advisor interface
+         * Processes weather data and generates HTML for display
+         * @param {Object} data - Weather data from Open-Meteo API
+         */
         function renderApp(data) {
             const now = new Date();
             const currentHour = now.getHours();
 
-            // Find current hour index
+            // ===== DATA EXTRACTION =====
+            // Find current hour in the hourly forecast data
             const hourlyData = data.hourly;
             const currentIndex = hourlyData.time.findIndex(t => {
                 const hour = new Date(t).getHours();
                 return hour === currentHour;
             });
 
-            // Validate current index was found
-            if (currentIndex === -1) {
-                throw new Error('Could not find current hour in forecast data');
-            }
-
-            // Get data for next 8 hours (0, 1, 2, 4, 6, 8 hours)
+            // Extract data for next 8 hours starting from current hour
             const next8HoursData = [];
             for (let i = 0; i <= 8; i++) {
                 const idx = currentIndex + i;
                 if (idx < hourlyData.time.length) {
                     next8HoursData.push({
-                        hour: i,
+                        hour: i,  // Hours from now (0 = current hour)
                         time: new Date(hourlyData.time[idx]),
                         apparentTemp: hourlyData.apparent_temperature[idx],
                         uvIndex: hourlyData.uv_index[idx] || 0,
                         isDay: hourlyData.is_day[idx] === 1,
                         humidity: hourlyData.relative_humidity_2m[idx],
                         windSpeed: hourlyData.wind_speed_10m[idx],
+                        // Combine rain and snow into total precipitation
                         precipitation: (hourlyData.precipitation[idx] || 0) + (hourlyData.snowfall[idx] || 0),
                         precipProb: hourlyData.precipitation_probability[idx] || 0
                     });
                 }
             }
 
-            // Create hourly cards for display (0, 1, 2, 4, 6, 8)
+            // ===== HOURLY FORECAST CARDS =====
+            // Create formatted data for display cards at specific hours
             const hourlyCards = FORECAST_HOURS.map(hour => {
                 const hourData = next8HoursData.find(h => h.hour === hour);
                 if (!hourData) return null;
 
+                // Calculate sun-adjusted temperature
                 const withSun = getApparentTempWithSun(hourData.apparentTemp, hourData.uvIndex, hourData.isDay);
 
                 return {
@@ -698,15 +937,24 @@
             }
 
             // Find max UV in 8-hour window (only show if > UV_THRESHOLD)
+            // ===== 8-HOUR ANALYSIS =====
+            // Calculate worst-case scenarios across the 8-hour window
+
+            // Find coldest temperature for clothing recommendations
+            const coldestTemp = Math.min(...next8HoursData.map(h => h.apparentTemp));
+            const coldestLayers = getLayersForTemp(coldestTemp);
+
+            // Find maximum UV index during daytime hours
             const maxUV = Math.max(...next8HoursData.filter(h => h.isDay).map(h => h.uvIndex));
             const maxSunAdjustment = maxUV > UV_THRESHOLD ? maxUV * UV_TEMP_ADJUSTMENT : 0;
 
-            // Find max precipitation in 8-hour window
+            // Find maximum precipitation for rain gear recommendations
             const maxPrecip = Math.max(...next8HoursData.map(h => h.precipitation));
             const maxPrecipProb = Math.max(...next8HoursData.map(h => h.precipProb));
             const rainProtection = getRainProtection(maxPrecip, maxPrecipProb);
 
-            // Render HTML
+            // ===== HTML GENERATION =====
+            // Build complete HTML for the weather interface
             let html = `
                 <div class="section">
                     <h2 class="section-title">Hourly Conditions</h2>
@@ -795,20 +1043,32 @@
                 </div>
             `;
 
+            // Update the DOM with generated HTML
             document.getElementById('app').innerHTML = html;
         }
 
+        // ============================================
+        // APPLICATION INITIALIZATION
+        // Entry point and automatic refresh setup
+        // ============================================
+
+        /**
+         * Initializes the application
+         * Fetches initial weather data and sets up hourly refresh
+         */
         async function init() {
             try {
+                // Fetch and display initial weather data
                 const data = await fetchWeatherData();
                 renderApp(data);
-                
-                // Update every hour
+
+                // Set up automatic refresh every hour (3600000 ms)
                 setInterval(async () => {
                     const data = await fetchWeatherData();
                     renderApp(data);
-                }, 3600000);
+                }, 3600000);  // 1 hour in milliseconds
             } catch (error) {
+                // Display error message if data fetch fails
                 document.getElementById('app').innerHTML = `
                     <div class="error">
                         <strong>Error loading weather data</strong><br>
@@ -818,6 +1078,7 @@
             }
         }
 
+        // Start the application when script loads
         init();
     </script>
 </body>
