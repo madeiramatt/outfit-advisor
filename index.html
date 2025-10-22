@@ -753,6 +753,7 @@
             }
             
             // Temperature-based layering recommendations
+            // needs: accessories, shoe types, sun hat, toque, 1 or 2 glove layers, balaclava, sunglasses, etc
             if (apparentTemp <= 30 && apparentTemp > 20) {
                 // Hot: No additional layers
             } else if (apparentTemp <= 20 && apparentTemp > 15) {
@@ -786,8 +787,8 @@
                 lower.push(1, 2, 3, 6);
             } else if (apparentTemp <= -20) {
                 // Severe cold: Maximum protection both
-                upper.push(1, 2, 3, 6, 7);
-                lower.push(1, 2, 3, 6, 7);
+                upper.push(2, 3, 6, 7);
+                lower.push(2, 3, 6, 7);
             }
             
             return { upper, lower };
