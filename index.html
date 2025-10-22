@@ -921,6 +921,22 @@
                 };
             }).filter(c => c !== null);
 
+            // Handle edge case where no data is available
+            if (next8HoursData.length === 0) {
+                throw new Error('Insufficient forecast data available');
+            }
+
+            // Find coldest temp in 8-hour window
+            const coldestTemp = Math.min(...next8HoursData.map(h => h.apparentTemp));
+            const coldestLayers = getLayersForTemp(coldestTemp);
+
+            // Validate that coldestLayers is an array
+            if (!Array.isArray(coldestLayers)) {
+                console.error('coldestLayers is not an array:', coldestLayers, 'coldestTemp:', coldestTemp);
+                throw new Error('Invalid layer calculation');
+            }
+
+            // Find max UV in 8-hour window (only show if > UV_THRESHOLD)
             // ===== 8-HOUR ANALYSIS =====
             // Calculate worst-case scenarios across the 8-hour window
 
