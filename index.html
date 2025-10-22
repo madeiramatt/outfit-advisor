@@ -98,7 +98,7 @@
            BASE STYLES
            Reset and fundamental page styling
            ============================================ */
-        {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;  /* Include padding/border in element dimensions */
@@ -986,9 +986,21 @@
                     <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
                         Based on coldest temperature in next 8 hours: <strong>${coldestTemp.toFixed(1)}°C</strong>
                     </p>
-                    <ul class="layers-list">
-                        ${coldestLayers.map(l => `<li>${ECWCS_LAYERS[l]}</li>`).join('')}
-                    </ul>
+                    ${coldestLayers.upper.length > 0 ? `
+                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Upper Body</h3>
+                        <ul class="layers-list">
+                            ${coldestLayers.upper.map(l => `<li>${ECWCS_LAYERS[l].upper}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                    ${coldestLayers.lower.length > 0 ? `
+                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Lower Body</h3>
+                        <ul class="layers-list">
+                            ${coldestLayers.lower.map(l => `<li>${ECWCS_LAYERS[l].lower}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                    ${coldestLayers.upper.length === 0 && coldestLayers.lower.length === 0 ? `
+                        <div class="no-additional">No additional layers needed - enjoy the warm weather!</div>
+                    ` : ''}
                 </div>
 
                 ${rainProtection ? `
@@ -1013,9 +1025,21 @@
                     <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
                         Worst-case layering if staying outside for the entire 8-hour period
                     </p>
-                    <ul class="layers-list">
-                        ${coldestLayers.map(l => `<li>${ECWCS_LAYERS[l]}</li>`).join('')}
-                    </ul>
+                    ${coldestLayers.upper.length > 0 ? `
+                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Upper Body</h3>
+                        <ul class="layers-list">
+                            ${coldestLayers.upper.map(l => `<li>${ECWCS_LAYERS[l].upper}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                    ${coldestLayers.lower.length > 0 ? `
+                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Lower Body</h3>
+                        <ul class="layers-list">
+                            ${coldestLayers.lower.map(l => `<li>${ECWCS_LAYERS[l].lower}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                    ${coldestLayers.upper.length === 0 && coldestLayers.lower.length === 0 ? `
+                        <div class="no-additional">No additional layers needed - enjoy the warm weather!</div>
+                    ` : ''}
                     ${rainProtection ? `
                         <div style="margin-top: 15px; padding: 14px 18px; background: linear-gradient(180deg, var(--amber-lighter) 0%, var(--amber-light) 100%); border-radius: 8px; border-left: 4px solid var(--amber-base); color: var(--amber-darker); font-weight: 500;">
                             ⚠️ Rain protection required (see Precipitation section above)
