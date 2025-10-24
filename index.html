@@ -839,12 +839,15 @@
             if (humidity > HUMID_THRESHOLD && temp > VEST_TEMP_THRESHOLD) {
                 // Humid and mild - vest for breathability
                 items.push('Vest (humid conditions)');
-            } else if (windSpeed > 30) {
+            } else if (windSpeed > 20) {
                 // Strong wind - dedicated wind shell
-                items.push('Layer IV wind shell');
-            } else {
+                items.push('Layer 4 upper');
+             } else if (windSpeed > 30) {
+                // Strong wind - dedicated wind shell
+                items.push('Layer 4 upper and lower');
+            } else (windSpeed > 5 <= 20) {
                 // Moderate wind - basic windbreaker
-                items.push('Windbreaker');
+                items.push('Layer 4 Windbreaker');
             }
 
             // Very strong wind requires face protection
@@ -914,11 +917,11 @@
                     hour,
                     title: hour === 0 ? 'Now' : `In ${hour} hour${hour > 1 ? 's' : ''}`,
                     temp: hourData.apparentTemp.toFixed(1),
-                    inSunTemp: withSun.sunAdjustment > 0 ? withSun.temp.toFixed(1) : null,
+                    inSunTemp: withSun.sunAdjustment > 0 ? withSun.temp.toFixed(0) : null,
                     precipProb: hourData.precipProb,
-                    precipMm: hourData.precipitation.toFixed(1),
+                    precipMm: hourData.precipitation.toFixed(0),
                     windSpeed: hourData.windSpeed.toFixed(0),
-                    uvIndex: hourData.uvIndex.toFixed(1)
+                    uvIndex: hourData.uvIndex.toFixed(0)
                 };
             }).filter(c => c !== null);
 
@@ -1105,7 +1108,7 @@
                             </div>
                             <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
                                 <strong>Upper:</strong> Lightweight windbreaker, nylon wind jacket, running shell jacket<br>
-                                <strong>Lower:</strong> Wind pants, lightweight nylon track pants, running pants
+                                <strong>Lower:</strong> Wind pants, Soft Shell pants, lightweight nylon track pants, running pants
                             </div>
                         </div>
 
