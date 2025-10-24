@@ -848,19 +848,15 @@
             if (humidity > HUMID_THRESHOLD && temp > VEST_TEMP_THRESHOLD) {
                 // Humid and mild - vest for breathability
                 items.push('Vest (humid conditions)');
-            } else if (windSpeed > 20) {
+            } else if (windSpeed > 15) {
                 // Strong wind - dedicated wind shell
                 items.push('Layer 4 upper');
-            } else if (windSpeed > 30) {
+            } else if (windSpeed > 22) {
                 // Strong wind - dedicated wind shell
                 items.push('Layer 4 upper and lower');
-            } else if (windSpeed > 5 && windSpeed <= 20) {
-                // Moderate wind - basic windbreaker
-                items.push('Layer 4 Windbreaker');
             }
-
             // Very strong wind requires face protection
-            if (windSpeed > 40) {
+            if (windSpeed > 30) {
                 items.push('Face protection recommended');
             }
 
