@@ -651,7 +651,7 @@
         const WAKING_HOURS_END = 23;    // 11 PM
 
         // Temperature and weather thresholds
-        const UV_TEMP_ADJUSTMENT = 0.72;    // °C adjustment per UV index point when in sun
+        const UV_TEMP_ADJUSTMENT = 0.72;    // °C adjustment per UV index point when in sun because apparent temperature is taken in shade
         const WIND_THRESHOLD = 15;          // km/h - wind speed requiring protection
         const HUMID_THRESHOLD = 60;         // % - humidity level affecting comfort
         const VEST_TEMP_THRESHOLD = 10;     // °C - temperature threshold for vest recommendation
@@ -669,30 +669,34 @@
         const ECWCS_LAYERS = {
             0: {
                 upper: "Moisture-wicking t-shirt",
-                lower: "Moisture-wicking boxers"
+                lower: "Moisture-wicking boxers",
+                pants: "Shorts OR Light-weight pants, 120-180 GSM"
             },
             1: {
                 upper: "Lightweight wicking long upper",
-                lower: "Lightweight wicking long lower"
+                lower: "Lightweight wicking long lower",
+                pants: "Medium-weight pants, 180-250 GSM"
             },
             2: {
                 upper: "Insulation Vest OR Mid-weight waffle knit polyester, long sleeve",
-                lower: "Mid-weight waffle knit polyester, long pants"
+                lower: "Mid-weight waffle knit polyester, long pants",
+                pants: "Soft shell pants, 250-350 GSM"
             },
             3: {
-                upper: "High-loft insulation sweater"
+                upper: "High-loft insulation sweater",
+                pants: "Insulated Soft shell pants"
             },
             4: {
                 upper: "Wind jacket (nylon)",
                 lower: "Wind pants (nylon)"
             },
             5: {
-                upper: "Soft shell, Water-repellent jacket",
-                lower: "Soft shell, Water-repellent pants"
+                upper: "Soft shell",
+                lower: "Soft shell"
             },
             6: {
-                upper: "Hard shell jacket. Water & Wind proof.",
-                lower: "Hard shell pants. Water & Wind proof."
+                upper: "Hard shell jacket. Water proof.",
+                lower: "Hard shell pants. Water proof."
             },
             7: {
                 upper: "Extreme cold parka",
@@ -700,6 +704,16 @@
             }
         };
 
+        /* this table needs to be shown at the very bottom of the screen:
+        Pant Type                 |  Typical GSM Range  |  Equivalent oz/yd²  |  Characteristics                                                                                                  
+        --------------------------+---------------------+---------------------+-------------------------------------------------------------------------------------------------------------------
+        Lightweight hiking pants  |  120–180 GSM        |  ~3.5–5.5 oz/yd²    |  Thin, quick-drying, ideal for warm climates; made mostly from nylon or polyester blends with spandex for stretch.
+        Midweight hiking pants    |  180–250 GSM        |  ~5.5–7.5 oz/yd²    |  Versatile balance of durability and comfort; good for all-season trekking.                                       
+        Heavyweight hiking pants  |  250–350 GSM        |  ~7.5–10.5 oz/yd²   |  Thicker softshell or canvas-style pants; designed for alpine or cold-weather hiking.                             
+        Standard denim jeans      |  400–510 GSM        |  ~12–15 oz/yd²      |  Substantially denser cotton twill; built for durability, not breathability or packability.                       
+        Heavy denim jeans         |  600–800+ GSM       |  ~18–24 oz/yd²      |  Very rigid and heavy; mostly for enthusiasts or workwear.                                                        
+        */
+        
         // ============================================
         // WEATHER DATA FUNCTIONS
         // API integration and data processing
@@ -745,42 +759,71 @@
         function getLayersForTemp(apparentTemp) {
             const upper = [];
             const lower = [];
+            const pants = [];
             
             // Base layer recommended above freezing
             if (apparentTemp > 0) {
                 upper.push(0);
                 lower.push(0);
             }
-            
+
+
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////
             // Temperature-based layering recommendations
             // needs: accessories, shoe types, sun hat, toque, 1 or 2 glove layers, balaclava, sunglasses, etc
             if (apparentTemp <= 30 && apparentTemp > 20) {
                 // Hot: No additional layers
+                upper.push(0);
+                lower.push(0);
+                pants.push(0);
             } else if (apparentTemp <= 20 && apparentTemp > 15) {
                 // Warm: No additional layers
-                upper.push(1, 4);
+                upper.push(0, 4);
+                lower.push(0);
+                pants.push(0);
             } else if (apparentTemp <= 15 && apparentTemp > 10) {
                 // Cool: Light insulation on top
-                upper.push(1, 2, 3);
+                // array outputs more than 1 option "OR"
+                upper = [
+                        [0, 3],
+                        [1, 2]
+                        ];
+                pants.push(1);
             } else if (apparentTemp <= 10 && apparentTemp > 5) {
                 // Cold: Insulation on top, optional on bottom
-                upper.push(3); // push(0, 3);?
+                upper = [
+                        [0, 3],
+                        [1, 4]
+                        ];
+                pants.push(2);
             } else if (apparentTemp <= 5 && apparentTemp > 0) {
                 // Very cold: Multiple layers top, fewer bottom
-                upper.push(1, 2, 3, 5);
-                lower.push(1, 2, 5);
+                // OCT 25 onwards, still testing
+                upper = [
+                        [0, 2, 4],
+                        [1, 2, 6]
+                        ];
+                lower.push(0);
+                pants.push(2);
             } else if (apparentTemp <= 0 && apparentTemp > -5) {
                 // Very cold: Multiple layers top, fewer bottom
-                upper.push(1, 2, 3, 5);
-                lower.push(1, 2, 5);
+                upper = [
+                        [0, 3, 4],
+                        [1, 2, 6]
+                        ];
+                lower.push(0);
+                pants.push(2);
             } else if (apparentTemp <= -5 && apparentTemp > -10) {
                 // Very cold: Multiple layers top, fewer bottom
-                upper.push(1, 2, 3, 5);
-                lower.push(1, 2, 5);
+                upper.push(0, 1, 2, 4);
+                lower.push(0,1);
+                pants.push(2);
             } else if (apparentTemp <= -10 && apparentTemp > -15) {
                 // Extreme cold: Full layering, slightly less insulation bottom
-                upper.push(1, 2, 3, 6, 7);
-                lower.push(1, 2, 3, 6);
+                upper.push(0, 1, 3, 4);
+                lower.push(0, 2, 4);
+                pants.push(2);
             } else if (apparentTemp <= -15 && apparentTemp > -20) {
                 // Extreme cold: Full layering, slightly less insulation bottom
                 upper.push(1, 2, 3, 6, 7);
@@ -921,7 +964,7 @@
                 return {
                     hour,
                     title: hour === 0 ? 'Now' : `In ${hour} hour${hour > 1 ? 's' : ''}`,
-                    temp: hourData.apparentTemp.toFixed(1),
+                    temp: hourData.apparentTemp.toFixed(0),
                     inSunTemp: withSun.sunAdjustment > 0 ? withSun.temp.toFixed(0) : null,
                     precipProb: hourData.precipProb,
                     precipMm: hourData.precipitation.toFixed(0),
@@ -990,7 +1033,7 @@
                                 Rain Expected
                             </div>
                             <div class="protection-item">• Probability: ${maxPrecipProb}%</div>
-                            <div class="protection-item">• Expected: ${maxPrecip.toFixed(1)} mm/hour</div>
+                            <div class="protection-item">• Expected: ${maxPrecip.toFixed(0)} mm/hour</div>
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
                                 ${rainProtection.items.map(item => `<div class="protection-item">• ${item}</div>`).join('')}
                             </div>
@@ -1001,7 +1044,7 @@
                 ${maxSunAdjustment > 0 ? `
                     <div class="section">
                         <div class="sun-adjustment">
-                            ☀️ In sun: up to +${maxSunAdjustment.toFixed(1)}°C warmer
+                            ☀️ In sun: up to +${maxSunAdjustment.toFixed(0)}°C warmer
                         </div>
                     </div>
                 ` : ''}
@@ -1009,7 +1052,7 @@
                 <div class="section">
                     <h2 class="section-title">Coldest Temperature Layers</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
-                        Based on coldest temperature in next 8 hours: <strong>${coldestTemp.toFixed(1)}°C</strong>
+                        Based on coldest temperature in next 8 hours: <strong>${coldestTemp.toFixed(0)}°C</strong>
                     </p>
                     ${coldestLayers.upper.length > 0 ? `
                         <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Upper Body</h3>
@@ -1055,6 +1098,9 @@
                     ` : ''}
                 </div>
 
+
+                
+                /////////////////////////////////////////////////////////////////////////////////////////////
                 <div class="section">
                     <h2 class="section-title">Layering Reference Guide</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
@@ -1068,41 +1114,41 @@
                                 Layer 0 - Base Layer
                             </div>
                             <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-                                <strong>Upper:</strong> Moisture-wicking t-shirt, synthetic or merino wool short-sleeve base layer.<br>
-                                <strong>Lower:</strong> Moisture-wicking boxers/briefs, synthetic underwear.
+                                <strong>Upper:</strong> Moisture-wicking short-sleeve base layer.<br>
+                                <strong>Lower:</strong> Moisture-wicking underwear.
                             </div>
                         </div>
 
                         <!-- Layer 1 -->
                         <div style="background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-dark) 100%); padding: 18px 20px; border-radius: 10px; box-shadow: var(--shadow-medium);">
                             <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 10px; font-size: 15px;">
-                                Layer 1 - Lightweight Thermal
+                                Layer 1 - Lightweight Thermal (Base or over top previous layer)
                             </div>
                             <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-                                <strong>Upper:</strong> Lightweight wicking long-sleeve shirt, thin thermal top, wool mesh shirt.<br>
-                                <strong>Lower:</strong> Lightweight thermal leggings.
+                                <strong>Upper:</strong> Lightweight insulating, wicking long-sleeve shirt.<br>
+                                <strong>Lower:</strong> Lightweight insulating, wicking leggings.
                             </div>
                         </div>
 
                         <!-- Layer 2 -->
                         <div style="background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-dark) 100%); padding: 18px 20px; border-radius: 10px; box-shadow: var(--shadow-medium);">
                             <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 10px; font-size: 15px;">
-                                Layer 2 - Mid-Weight Insulation
+                                Layer 2 - Mid-Weight Insulation (Base or over top previous layer)
                             </div>
                             <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
                                 <strong>Upper:</strong> Waffle knit 1/4 zip or button pullover, long-sleeve flannel shirt, thin cardigan, Patagonia R1 fleece pullover, carhartt / columbia vest, grid fleece<br>
-                                <strong>Lower:</strong> Mid-weight waffle knit pants, thicker thermal leggings, fleece-lined pants
+                                <strong>Lower:</strong> Mid-weight waffle knit leggings, thicker thermal leggings, fleece-lined pants
                             </div>
                         </div>
 
                         <!-- Layer 3 -->
                         <div style="background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-dark) 100%); padding: 18px 20px; border-radius: 10px; box-shadow: var(--shadow-medium);">
                             <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 10px; font-size: 15px;">
-                                Layer 3 - High-Loft Insulation
+                                Layer 3 - High-Loft Insulation (Base or over top previous layer)
                             </div>
                             <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
                                 <strong>Upper:</strong> Gen 3 fleece sweater, Anian wool jacket, Patagonia R2/R3 fleece, filson wool vest, synthetic puffy vest, Primaloft jacket<br>
-                                <strong>Lower:</strong> 100 sweatpants volebak (At -10C to -20C Wear Layer 0 lower with Layer 3 pants.).
+                                <!-- PANTS WEIGHT NEEDS ITS OWN RECCOMENDER <strong>Lower:</strong> Heavyweight pants. 100 sweatpants volebak (At -10C to -20C Wear Layer 0 lower with Layer 3 pants.). -->
                             </div>
                         </div>
 
@@ -1112,7 +1158,7 @@
                                 Layer 4 - Wind Shell
                             </div>
                             <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-                                <strong>Upper:</strong> Lightweight windbreaker, nylon wind jacket, running shell jacket<br>
+                                <strong>Upper:</strong> Non-waterproof windbreaker, nylon wind jacket, running shell jacket<br>
                                 <strong>Lower:</strong> Wind pants, Soft Shell pants, lightweight nylon track pants, running pants
                             </div>
                         </div>
