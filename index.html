@@ -757,9 +757,9 @@
          * @returns {Array<number>} Array of layer numbers to wear
          */
         function getLayersForTemp(apparentTemp) {
-            const upper = [];
-            const lower = [];
-            const pants = [];
+            let upper = [];
+            let lower = [];
+            let pants = [];
             
             // Base layer recommended above freezing
             if (apparentTemp > 0) {
