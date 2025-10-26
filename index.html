@@ -977,9 +977,9 @@
             // ===== 8-HOUR ANALYSIS =====
             // Calculate worst-case scenarios across the 8-hour window
 
-            // Find coldest temperature for clothing recommendations
-            const coldestTemp = Math.min(...next8HoursData.map(h => h.apparentTemp));
-            const coldestLayers = getLayersForTemp(coldestTemp);
+            // Use current temperature for clothing recommendations
+            const currentTemp = next8HoursData[0].apparentTemp;
+            const coldestLayers = getLayersForTemp(currentTemp);
 
             // Find maximum UV index during daytime hours
             const maxUV = Math.max(...next8HoursData.filter(h => h.isDay).map(h => h.uvIndex));
@@ -1051,9 +1051,9 @@
                 ` : ''}
 
                 <div class="section">
-                    <h2 class="section-title">Coldest Temperature Layers</h2>
+                    <h2 class="section-title">Current Temperature Layers</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
-                        Based on coldest temperature in next 8 hours: <strong>${coldestTemp.toFixed(0)}°C</strong>
+                        Based on current temperature: <strong>${currentTemp.toFixed(0)}°C</strong>
                     </p>
                     ${coldestLayers.upper.length > 0 ? `
                         <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Upper Body</h3>
