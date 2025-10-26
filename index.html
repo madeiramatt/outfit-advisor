@@ -765,6 +765,7 @@
             if (apparentTemp > 0) {
                 upper.push(0);
                 lower.push(0);
+                pants.push(0);
             }
 
 
@@ -786,32 +787,32 @@
                 // Cool: Light insulation on top
                 // array outputs more than 1 option "OR"
                 upper = [
-                        [0, 3],
-                        [1, 2]
-                        ];
+                    [0, 3],
+                    [1, 2]
+                ];
                 pants.push(1);
             } else if (apparentTemp <= 10 && apparentTemp > 5) {
                 // Cold: Insulation on top, optional on bottom
                 upper = [
-                        [0, 3],
-                        [1, 4]
-                        ];
+                    [0, 3],
+                    [1, 4]
+                ];
                 pants.push(2);
             } else if (apparentTemp <= 5 && apparentTemp > 0) {
                 // Very cold: Multiple layers top, fewer bottom
                 // OCT 25 onwards, still testing
                 upper = [
-                        [0, 2, 4],
-                        [1, 2, 6]
-                        ];
+                    [0, 2, 4],
+                    [1, 2, 6]
+                ];
                 lower.push(0);
                 pants.push(2);
             } else if (apparentTemp <= 0 && apparentTemp > -5) {
                 // Very cold: Multiple layers top, fewer bottom
                 upper = [
-                        [0, 3, 4],
-                        [1, 2, 6]
-                        ];
+                    [0, 3, 4],
+                    [1, 2, 6]
+                ];
                 lower.push(0);
                 pants.push(2);
             } else if (apparentTemp <= -5 && apparentTemp > -10) {
