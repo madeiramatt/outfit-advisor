@@ -776,12 +776,10 @@
             if (apparentTemp <= 30 && apparentTemp > 20) {
                 // Hot: No additional layers
                 upper.push(0);
-                lower.push(0);
                 pants.push(0);
             } else if (apparentTemp <= 20 && apparentTemp > 15) {
                 // Warm: No additional layers
                 upper.push(0, 4);
-                lower.push(0);
                 pants.push(0);
             } else if (apparentTemp <= 15 && apparentTemp > 10) {
                 // Cool: Light insulation on top
@@ -798,13 +796,11 @@
                 // OCT 25 onwards, still testing
                 upper.push(0, 2, 4);  // Option: base + mid-weight + wind shell
                 // OR upper.push(1, 2, 6);  // Alternate: thermal + mid-weight + hard shell
-                lower.push(0);
                 pants.push(2);
             } else if (apparentTemp <= 0 && apparentTemp > -5) {
                 // Very cold: Multiple layers top, fewer bottom
                 upper.push(0, 3, 4);  // Option: base + high-loft + wind shell
                 // OR upper.push(1, 2, 6);  // Alternate: thermal + mid-weight + hard shell
-                lower.push(0);
                 pants.push(2);
             } else if (apparentTemp <= -5 && apparentTemp > -10) {
                 // Very cold: Multiple layers top, fewer bottom
@@ -820,6 +816,7 @@
                 // Extreme cold: Full layering, slightly less insulation bottom
                 upper.push(1, 2, 3, 6, 7);
                 lower.push(1, 2, 3, 6);
+                pants.push(3);
             } else if (apparentTemp <= -20) {
                 // Severe cold: Maximum protection both
                 upper.push(2, 3, 6, 7);
@@ -883,7 +880,7 @@
             if (humidity > HUMID_THRESHOLD && temp > VEST_TEMP_THRESHOLD) {
                 // Humid and mild - vest for breathability
                 items.push('Vest (humid conditions)');
-            } else if (windSpeed > 15) {
+            } else if (windSpeed > 13) {
                 // Strong wind - dedicated wind shell
                 items.push('Layer 4 upper');
             } else if (windSpeed > 22) {
