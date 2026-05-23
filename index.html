@@ -765,7 +765,6 @@
             if (apparentTemp > 0) {
                 upper.push(0);
                 lower.push(0);
-                pants.push(0);
             }
 
 
@@ -775,26 +774,25 @@
             // needs: accessories, shoe types, sun hat, toque, 1 or 2 glove layers, balaclava, sunglasses, etc
             if (apparentTemp <= 30 && apparentTemp > 20) {
                 // Hot: No additional layers
-                upper.push(0);
                 pants.push(0);
             } else if (apparentTemp <= 20 && apparentTemp > 15) {
                 // Warm: No additional layers
-                upper.push(0, 4);
+                upper.push(4);
                 pants.push(0);
             } else if (apparentTemp <= 15 && apparentTemp > 10) {
                 // Cool: Light insulation on top
-                upper.push(0, 3);  // Option: base layer + high-loft insulation
+                upper.push(3);  // Option: base layer + high-loft insulation
                 // OR upper.push(1, 2);  // Alternate: lightweight thermal + mid-weight
                 pants.push(1);
             } else if (apparentTemp <= 10 && apparentTemp > 5) {
                 // Cold: Insulation on top, optional on bottom
-                upper.push(0, 3);  // Option: base + high-loft
+                upper.push(3);  // Option: base + high-loft
                 // OR upper.push(1, 4);  // Alternate: thermal + wind shell
                 pants.push(2);
             } else if (apparentTemp <= 5 && apparentTemp > 0) {
                 // Very cold: Multiple layers top, fewer bottom
                 // OCT 25 onwards, still testing
-                upper.push(0, 2, 4);  // Option: base + mid-weight + wind shell
+                upper.push(2, 4);  // Option: base + mid-weight + wind shell
                 // OR upper.push(1, 2, 6);  // Alternate: thermal + mid-weight + hard shell
                 pants.push(2);
             } else if (apparentTemp <= 0 && apparentTemp > -5) {
@@ -805,7 +803,7 @@
             } else if (apparentTemp <= -5 && apparentTemp > -10) {
                 // Very cold: Multiple layers top, fewer bottom
                 upper.push(0, 1, 2, 4);
-                lower.push(0,1);
+                lower.push(0, 1);
                 pants.push(2);
             } else if (apparentTemp <= -10 && apparentTemp > -15) {
                 // Extreme cold: Full layering, slightly less insulation bottom
@@ -821,9 +819,10 @@
                 // Severe cold: Maximum protection both
                 upper.push(2, 3, 6, 7);
                 lower.push(2, 3, 6, 7);
+                pants.push(3);
             }
-            
-            return { upper, lower };
+
+            return { upper, lower, pants };
         }
 
         /**
@@ -880,12 +879,12 @@
             if (humidity > HUMID_THRESHOLD && temp > VEST_TEMP_THRESHOLD) {
                 // Humid and mild - vest for breathability
                 items.push('Vest (humid conditions)');
-            } else if (windSpeed > 13) {
-                // Strong wind - dedicated wind shell
-                items.push('Layer 4 upper');
             } else if (windSpeed > 22) {
-                // Strong wind - dedicated wind shell
+                // Strong wind - wind shell on upper and lower
                 items.push('Layer 4 upper and lower');
+            } else if (windSpeed > 13) {
+                // Moderate wind - wind shell on upper only
+                items.push('Layer 4 upper');
             }
             // Very strong wind requires face protection
             if (windSpeed > 30) {
@@ -969,6 +968,10 @@
             const currentTemp = next8HoursData[0].apparentTemp;
             const coldestLayers = getLayersForTemp(currentTemp);
 
+            // Use coldest apparent temperature across 8-hour window for worst-case layers
+            const coldestTemp = Math.min(...next8HoursData.map(h => h.apparentTemp));
+            const worstCaseLayers = getLayersForTemp(coldestTemp);
+
             // Find maximum UV index during daytime hours
             const maxUV = Math.max(...next8HoursData.filter(h => h.isDay).map(h => h.uvIndex));
             const maxSunAdjustment = maxUV > UV_THRESHOLD ? maxUV * UV_TEMP_ADJUSTMENT : 0;
@@ -1050,12 +1053,18 @@
                         </ul>
                     ` : ''}
                     ${coldestLayers.lower.length > 0 ? `
-                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Lower Body</h3>
+                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Lower Body (under pants)</h3>
                         <ul class="layers-list">
                             ${coldestLayers.lower.map(l => `<li>${ECWCS_LAYERS[l].lower}</li>`).join('')}
                         </ul>
                     ` : ''}
-                    ${coldestLayers.upper.length === 0 && coldestLayers.lower.length === 0 ? `
+                    ${coldestLayers.pants.length > 0 ? `
+                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Pants</h3>
+                        <ul class="layers-list">
+                            ${coldestLayers.pants.map(l => ECWCS_LAYERS[l].pants ? `<li>${ECWCS_LAYERS[l].pants}</li>` : '').join('')}
+                        </ul>
+                    ` : ''}
+                    ${coldestLayers.upper.length === 0 && coldestLayers.lower.length === 0 && coldestLayers.pants.length === 0 ? `
                         <div class="no-additional">No additional layers needed - enjoy the warm weather!</div>
                     ` : ''}
                 </div>
@@ -1063,21 +1072,27 @@
                 <div class="section">
                     <h2 class="section-title">Clothing Layers Recommendation for 8 Hours</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
-                        Worst-case layering if staying outside for the entire 8-hour period
+                        Worst-case layering if staying outside for the entire 8-hour period (coldest: <strong>${coldestTemp.toFixed(0)}°C</strong>)
                     </p>
-                    ${coldestLayers.upper.length > 0 ? `
+                    ${worstCaseLayers.upper.length > 0 ? `
                         <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Upper Body</h3>
                         <ul class="layers-list">
-                            ${coldestLayers.upper.map(l => `<li>${ECWCS_LAYERS[l].upper}</li>`).join('')}
+                            ${worstCaseLayers.upper.map(l => `<li>${ECWCS_LAYERS[l].upper}</li>`).join('')}
                         </ul>
                     ` : ''}
-                    ${coldestLayers.lower.length > 0 ? `
-                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Lower Body</h3>
+                    ${worstCaseLayers.lower.length > 0 ? `
+                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Lower Body (under pants)</h3>
                         <ul class="layers-list">
-                            ${coldestLayers.lower.map(l => `<li>${ECWCS_LAYERS[l].lower}</li>`).join('')}
+                            ${worstCaseLayers.lower.map(l => `<li>${ECWCS_LAYERS[l].lower}</li>`).join('')}
                         </ul>
                     ` : ''}
-                    ${coldestLayers.upper.length === 0 && coldestLayers.lower.length === 0 ? `
+                    ${worstCaseLayers.pants.length > 0 ? `
+                        <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Pants</h3>
+                        <ul class="layers-list">
+                            ${worstCaseLayers.pants.map(l => ECWCS_LAYERS[l].pants ? `<li>${ECWCS_LAYERS[l].pants}</li>` : '').join('')}
+                        </ul>
+                    ` : ''}
+                    ${worstCaseLayers.upper.length === 0 && worstCaseLayers.lower.length === 0 && worstCaseLayers.pants.length === 0 ? `
                         <div class="no-additional">No additional layers needed - enjoy the warm weather!</div>
                     ` : ''}
                     ${rainProtection ? `
