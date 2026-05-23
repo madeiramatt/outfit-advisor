@@ -659,7 +659,7 @@
         const RAIN_LIGHT_THRESHOLD = 2.5;   // mm per hour - threshold between light/heavy rain
 
         // Display configuration
-        const FORECAST_HOURS = [0, 1, 2, 4, 6, 8]; // Hours from now to display in forecast cards
+        const FORECAST_HOURS = [0, 1, 4, 6, 8]; // Hours from now to display in forecast cards
 
         // ============================================
         // ECWCS LAYERING SYSTEM
@@ -984,7 +984,7 @@
                 <div class="section">
                     <h2 class="section-title">Hourly Conditions</h2>
                     <div class="hourly-cards">
-                        ${hourlyCards.map(card => `
+                        ${hourlyCards.filter(card => card.hour <= 1).map(card => `
                             <div class="hourly-card">
                                 <div class="hourly-card-title">${card.title}</div>
                                 <div class="hourly-card-temp">${card.temp}°C</div>
@@ -1085,11 +1085,37 @@
                             ⚠️ Rain protection required (see Precipitation section above)
                         </div>
                     ` : ''}
+
+                    <div class="hourly-cards" style="margin-top: 20px;">
+                        ${hourlyCards.filter(card => card.hour >= 4).map(card => `
+                            <div class="hourly-card">
+                                <div class="hourly-card-title">${card.title}</div>
+                                <div class="hourly-card-temp">${card.temp}°C</div>
+                                <div class="hourly-card-content">
+                                    ${card.inSunTemp ? `
+                                        <div class="hourly-card-row">
+                                            <span class="hourly-card-label">In Sun</span>
+                                            <span class="hourly-card-value">${card.inSunTemp}°C</span>
+                                        </div>
+                                    ` : ''}
+                                    <div class="hourly-card-row">
+                                        <span class="hourly-card-label">Precip</span>
+                                        <span class="hourly-card-value">${card.precipProb}% / ${card.precipMm}mm</span>
+                                    </div>
+                                    <div class="hourly-card-row">
+                                        <span class="hourly-card-label">Wind</span>
+                                        <span class="hourly-card-value">${card.windSpeed} km/h</span>
+                                    </div>
+                                    <div class="hourly-card-row">
+                                        <span class="hourly-card-label">UV</span>
+                                        <span class="hourly-card-value">${card.uvIndex}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
 
-                
-                
-                
                 <div class="section">
                     <h2 class="section-title">Layering Reference Guide</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
