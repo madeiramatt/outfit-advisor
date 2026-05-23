@@ -969,6 +969,10 @@
             const currentTemp = next8HoursData[0].apparentTemp;
             const coldestLayers = getLayersForTemp(currentTemp);
 
+            // Use coldest apparent temperature across 8-hour window for worst-case layers
+            const coldestTemp = Math.min(...next8HoursData.map(h => h.apparentTemp));
+            const worstCaseLayers = getLayersForTemp(coldestTemp);
+
             // Find maximum UV index during daytime hours
             const maxUV = Math.max(...next8HoursData.filter(h => h.isDay).map(h => h.uvIndex));
             const maxSunAdjustment = maxUV > UV_THRESHOLD ? maxUV * UV_TEMP_ADJUSTMENT : 0;
@@ -1063,21 +1067,21 @@
                 <div class="section">
                     <h2 class="section-title">Clothing Layers Recommendation for 8 Hours</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
-                        Worst-case layering if staying outside for the entire 8-hour period
+                        Worst-case layering if staying outside for the entire 8-hour period (coldest: <strong>${coldestTemp.toFixed(0)}°C</strong>)
                     </p>
-                    ${coldestLayers.upper.length > 0 ? `
+                    ${worstCaseLayers.upper.length > 0 ? `
                         <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Upper Body</h3>
                         <ul class="layers-list">
-                            ${coldestLayers.upper.map(l => `<li>${ECWCS_LAYERS[l].upper}</li>`).join('')}
+                            ${worstCaseLayers.upper.map(l => `<li>${ECWCS_LAYERS[l].upper}</li>`).join('')}
                         </ul>
                     ` : ''}
-                    ${coldestLayers.lower.length > 0 ? `
+                    ${worstCaseLayers.lower.length > 0 ? `
                         <h3 style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 10px; margin-top: 20px;">Lower Body</h3>
                         <ul class="layers-list">
-                            ${coldestLayers.lower.map(l => `<li>${ECWCS_LAYERS[l].lower}</li>`).join('')}
+                            ${worstCaseLayers.lower.map(l => `<li>${ECWCS_LAYERS[l].lower}</li>`).join('')}
                         </ul>
                     ` : ''}
-                    ${coldestLayers.upper.length === 0 && coldestLayers.lower.length === 0 ? `
+                    ${worstCaseLayers.upper.length === 0 && worstCaseLayers.lower.length === 0 ? `
                         <div class="no-additional">No additional layers needed - enjoy the warm weather!</div>
                     ` : ''}
                     ${rainProtection ? `
